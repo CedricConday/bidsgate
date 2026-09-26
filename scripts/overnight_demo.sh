@@ -12,12 +12,13 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 SRC=${SRC:-/home/ubuntu/repos/ms-lesion-networks/sourcedata/ds007908}
 PY=${PY:-$HOME/.venvs/bidsgate/bin/python}
+SUBJECTS=${SUBJECTS:-sub-9*}   # the eight healthy controls of ds007908; the patients are sub-0*
 DERIV=derivatives/bidsgate-lesions
 OUT=derivatives/lst-ai
 mkdir -p work/logs results/lst-ai-v2
 
 echo "== $(date -Is) inject (skips subjects that already have a truth file)"
-for d in "$SRC"/sub-*/; do
+for d in "$SRC"/$SUBJECTS/; do
   S=$(basename "$d")
   if ls "$DERIV/$S"/*/anat/*desc-lesion_truth.json >/dev/null 2>&1; then echo "$S already injected"; continue; fi
   "$PY" -m bidsgate.cli inject-lesions "$SRC" --out "$DERIV" --subject "$S" --seed 0 2>&1
