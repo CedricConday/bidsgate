@@ -7,11 +7,14 @@ DERIV=${2:-derivatives/bidsgate-lesions}
 OUT=${3:-derivatives/lst-ai}
 IMG=jqmcginnis/lst-ai:v2.0.0rc1-cpu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-IN="$ROOT/$DERIV/$S/anat"
+IN=$(ls -d "$ROOT/$DERIV/$S"/ses-*/anat 2>/dev/null | head -1)
+[ -z "$IN" ] && IN="$ROOT/$DERIV/$S/anat"
+T1=$(basename "$(ls "$IN"/*_T1w.nii.gz | head -1)")
+FL=$(basename "$(ls "$IN"/*_FLAIR.nii.gz | head -1)")
 mkdir -p "$ROOT/$OUT/$S" "$ROOT/work/lst-tmp/$S" "$ROOT/work/logs"
 start=$(date +%s)
 docker run --rm -v "$IN":/in:ro -v "$ROOT/$OUT/$S":/out -v "$ROOT/work/lst-tmp/$S":/tmpd "$IMG" \
-  --t1 "/in/${S}_T1w.nii.gz" --flair "/in/${S}_FLAIR.nii.gz" --output /out --temp /tmpd \
+  --t1 "/in/$T1" --flair "/in/$FL" --output /out --temp /tmpd \
   --device cpu --segment_only --fast-mode --threads 4 > "$ROOT/work/logs/lst_$S.log" 2>&1
 rc=$?
 docker run --rm -v "$ROOT":/p --entrypoint chown "$IMG" -R "$(id -u):$(id -g)" "/p/$OUT/$S" "/p/work/lst-tmp/$S" >/dev/null 2>&1

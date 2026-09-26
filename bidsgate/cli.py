@@ -32,7 +32,11 @@ def cmd_inject_lesions(a) -> int:
         out_fl = derivative_path(out, anat, "FLAIR") if flair else None
         mask = derivative_path(out, anat, "mask", desc="lesionTruth")
         truth = derivative_path(out, anat, "truth", desc="lesion", ext=".json")
-        t = inject_lesions(anat.path, flair, out_t1, out_fl, mask, truth, spec)
+        try:
+            t = inject_lesions(anat.path, flair, out_t1, out_fl, mask, truth, spec)
+        except ValueError as e:
+            print(f"{anat.base}: skipped: {e}", file=sys.stderr)
+            continue
         note = {"BidsgateInjection": "lesions", "BidsgateSeed": spec.seed, "BidsgateTruth": truth.name}
         copy_json_sidecar(anat.path, out_t1, note)
         if flair and out_fl:
@@ -53,7 +57,11 @@ def cmd_inject_atrophy(a) -> int:
         out_t1 = derivative_path(out, anat, "T1w")
         out_fl = derivative_path(out, anat, "FLAIR") if flair else None
         truth = derivative_path(out, anat, "truth", desc="atrophy", ext=".json")
-        t = inject_atrophy(anat.path, flair, out_t1, out_fl, truth, AtrophySpec(volume_factor=a.factor, falloff_mm=a.falloff))
+        try:
+            t = inject_atrophy(anat.path, flair, out_t1, out_fl, truth, AtrophySpec(volume_factor=a.factor, falloff_mm=a.falloff))
+        except ValueError as e:
+            print(f"{anat.base}: skipped: {e}", file=sys.stderr)
+            continue
         copy_json_sidecar(anat.path, out_t1, {"BidsgateInjection": "atrophy", "BidsgateVolumeFactor": a.factor, "BidsgateTruth": truth.name})
         if flair and out_fl:
             copy_json_sidecar(flair, out_fl, {"BidsgateInjection": "atrophy", "BidsgateVolumeFactor": a.factor})
