@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>bidsgate scorecard: LST-AI v2.0.0rc1 (CPU, fast mode)</title>
+<style>body{font:15px/1.4 system-ui,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem;color:#222}
+table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:.4rem .5rem;text-align:left}
+th{background:#f4f4f4}.big{font-size:2rem;margin:.2rem 0}.grid{display:flex;gap:2rem;flex-wrap:wrap}.note{color:#555}</style></head><body>
+<h1>bidsgate scorecard: LST-AI v2.0.0rc1 (CPU, fast mode)</h1>
+<p class="note">Synthetic lesions with a known mask were injected into real T1w/FLAIR images; the pipeline was run on the result; this is what it recovered. Generated 2026-09-26 20:43 UTC. Nothing here is evidence about any disease; it is a test of software.</p>
+<div class="grid"><div><div class="big">0.75</div>mean Dice</div><div><div class="big">75%</div>lesion-wise sensitivity</div><div><div class="big">16</div>false-positive components</div><div><div class="big">1</div>subjects</div></div>
+<table><tr><th>subject</th><th>Dice</th><th>detected</th><th>FP comps</th><th>volume ratio</th><th>sens 0-100mm3</th><th>sens 100-500mm3</th><th>sens 500-infmm3</th></tr><tr><td>sub-9000_ses-1</td><td>0.75</td><td>9/12 (75%)</td><td>16</td><td>1.15</td><td>83% (n=6)</td><td>50% (n=2)</td><td>75% (n=4)</td></tr></table>
+<p class="note">Sensitivity by injected lesion volume shows the detection floor: the size below which the pipeline stops seeing lesions. Volume ratio is predicted over injected volume; under 1 means the pipeline under-segments what it does find.</p>
+</body></html>
