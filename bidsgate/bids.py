@@ -25,7 +25,8 @@ class Anat:
 
     @property
     def base(self) -> str:
-        return f"{self.subject}_{self.session}" if self.session else self.subject
+        """The filename with the suffix and extension removed, every entity kept (sub-01_ses-1_run-2)."""
+        return self.stem.removesuffix(f"_{self.suffix}")
 
 
 def find_anat(root: Path, suffix: str = "T1w", subjects: list[str] | None = None) -> list[Anat]:
@@ -48,12 +49,10 @@ def sibling(anat: Anat, suffix: str) -> Path | None:
 
 
 def derivative_path(out_root: Path, anat: Anat, suffix: str, desc: str | None = None, ext: str = ".nii.gz") -> Path:
-    parts = [anat.subject]
-    if anat.session:
-        parts.append(anat.session)
+    """Output path that keeps every entity of the source file, so run-1 and run-2 never collide."""
     d = out_root / anat.subject / (anat.session or "") / "anat"
     d.mkdir(parents=True, exist_ok=True)
-    name = "_".join(parts + ([f"desc-{desc}"] if desc else []) + [suffix]) + ext
+    name = "_".join([anat.base] + ([f"desc-{desc}"] if desc else []) + [suffix]) + ext
     return d / name
 
 

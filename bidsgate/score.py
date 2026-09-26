@@ -20,13 +20,16 @@ def _bin(vol: float) -> str:
     return "?"
 
 
-def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold: float = 0.5) -> dict:
+def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold: float = 0.5,
+                  fp_margin_mm: float = 2.0) -> dict:
     """Voxel and lesion-wise agreement between a predicted mask and the injected one.
 
     A predicted mask may be probabilistic; it is thresholded at ``threshold``.
-    A truth lesion counts as detected when any predicted voxel overlaps it;
-    a predicted component counts as a false positive when it overlaps no
-    truth lesion.
+    A truth lesion counts as detected when any predicted voxel overlaps it.
+    False-positive volume is every predicted voxel farther than ``fp_margin_mm``
+    from any truth lesion, and false-positive components are the connected
+    pieces (18-connectivity) of that residual, so over-segmentation that
+    happens to touch a true lesion is still counted.
     """
     with open(truth_json) as fh:
         truth = json.load(fh)
@@ -34,8 +37,9 @@ def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold
     t = np.asarray(t_img.dataobj).astype(np.int32)
     p_img = nib.load(pred_mask)
     p = np.asarray(p_img.dataobj, dtype=np.float32)
-    if p.shape != t.shape:
-        raise ValueError(f"prediction {p.shape} is not on the truth grid {t.shape}; resample it first")
+    if p.shape != t.shape or not np.allclose(p_img.affine, t_img.affine, atol=1e-3):
+        raise ValueError(f"prediction {p.shape} is not on the truth grid {t.shape} (shape or affine differs); "
+                         "resample it onto the truth image first")
     pb = p >= threshold
     tb = t > 0
     inter = float((pb & tb).sum())
@@ -49,22 +53,19 @@ def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold
                      "bin": _bin(les["volume_mm3"]), "detected": hit,
                      "overlap_fraction": float(pb[sel].mean()) if sel.any() else float("nan")})
     per = pd.DataFrame(rows)
-    comp, n = ndi.label(pb, structure=ndi.generate_binary_structure(3, 2))
-    fp = 0
-    fp_volume = 0.0
-    for k in range(1, n + 1):
-        sel = comp == k
-        if not tb[sel].any():
-            fp += 1
-            fp_volume += float(sel.sum() * voxel_mm3)
+    near_truth = ndi.distance_transform_edt(~tb, sampling=t_img.header.get_zooms()[:3]) <= fp_margin_mm
+    residual = pb & ~near_truth
+    _, fp = ndi.label(residual, structure=ndi.generate_binary_structure(3, 2))
+    fp_volume = float(residual.sum() * voxel_mm3)
     by_bin = per.groupby("bin")["detected"].agg(["count", "mean"]).rename(columns={"count": "n", "mean": "sensitivity"})
     return {
         "dice": dice,
         "sensitivity": float(per["detected"].mean()) if len(per) else float("nan"),
         "lesions": len(per),
         "detected": int(per["detected"].sum()),
-        "false_positive_components": fp,
+        "false_positive_components": int(fp),
         "false_positive_volume_mm3": fp_volume,
+        "fp_margin_mm": fp_margin_mm,
         "predicted_volume_mm3": float(pb.sum() * voxel_mm3),
         "truth_volume_mm3": float(tb.sum() * voxel_mm3),
         "volume_ratio": float(pb.sum() / tb.sum()) if tb.sum() else float("nan"),

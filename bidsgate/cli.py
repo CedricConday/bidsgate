@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import zlib
 from pathlib import Path
 
 import pandas as pd
@@ -19,21 +20,35 @@ from .report import scorecard_atrophy, scorecard_lesions
 from .score import score_atrophy, score_lesions
 
 
+def subject_seed(base: str, seed: int) -> int:
+    """One seed per image, stable under --subject selection and dataset growth."""
+    return zlib.crc32(base.encode()) ^ (seed & 0xFFFFFFFF)
+
+
+def _mask_for(pattern: str | None, anat) -> Path | None:
+    if not pattern:
+        return None
+    p = Path(pattern.format(base=anat.base, subject=anat.subject))
+    if not p.exists():
+        raise SystemExit(f"{anat.base}: brain mask not found at {p}")
+    return p
+
+
 def cmd_inject_lesions(a) -> int:
     root, out = Path(a.bids), Path(a.out)
     anats = find_anat(root, "T1w", a.subject)
     if not anats:
         raise SystemExit(f"no T1w images under {root}")
     write_dataset_description(out, "bidsgate lesions", root, "lesion")
-    for i, anat in enumerate(anats):
+    for anat in anats:
         flair = sibling(anat, "FLAIR")
-        spec = LesionSpec(n=a.n, seed=a.seed + i, flair_contrast=a.flair_contrast, t1_contrast=a.t1_contrast)
+        spec = LesionSpec(n=a.n, seed=subject_seed(anat.base, a.seed), flair_contrast=a.flair_contrast, t1_contrast=a.t1_contrast)
         out_t1 = derivative_path(out, anat, "T1w")
         out_fl = derivative_path(out, anat, "FLAIR") if flair else None
         mask = derivative_path(out, anat, "mask", desc="lesionTruth")
         truth = derivative_path(out, anat, "truth", desc="lesion", ext=".json")
         try:
-            t = inject_lesions(anat.path, flair, out_t1, out_fl, mask, truth, spec)
+            t = inject_lesions(anat.path, flair, out_t1, out_fl, mask, truth, spec, _mask_for(a.mask, anat))
         except ValueError as e:
             print(f"{anat.base}: skipped: {e}", file=sys.stderr)
             continue
@@ -58,7 +73,8 @@ def cmd_inject_atrophy(a) -> int:
         out_fl = derivative_path(out, anat, "FLAIR") if flair else None
         truth = derivative_path(out, anat, "truth", desc="atrophy", ext=".json")
         try:
-            t = inject_atrophy(anat.path, flair, out_t1, out_fl, truth, AtrophySpec(volume_factor=a.factor, falloff_mm=a.falloff))
+            t = inject_atrophy(anat.path, flair, out_t1, out_fl, truth, AtrophySpec(volume_factor=a.factor, falloff_mm=a.falloff),
+                               _mask_for(a.mask, anat))
         except ValueError as e:
             print(f"{anat.base}: skipped: {e}", file=sys.stderr)
             continue
@@ -80,7 +96,7 @@ def cmd_score_lesions(a) -> int:
         if not pred.exists():
             print(f"{base}: prediction not found at {pred}", file=sys.stderr)
             continue
-        s = score_lesions(truth_json, mask, pred, a.threshold)
+        s = score_lesions(truth_json, mask, pred, a.threshold, a.fp_margin)
         results.append({"subject": base, "score": s})
         print(f"{base}: Dice {s['dice']:.2f}  detected {s['detected']}/{s['lesions']}  FP {s['false_positive_components']}  volume ratio {s['volume_ratio']:.2f}")
     if not results:
@@ -101,10 +117,12 @@ def cmd_score_atrophy(a) -> int:
     results = []
     for _, row in vols.iterrows():
         base = str(row["subject"])
-        hits = list(truth_root.glob(f"{base.split('_')[0]}/**/anat/{base}*desc-atrophy_truth.json"))
+        hits = sorted(truth_root.glob(f"{base.split('_')[0]}/**/anat/{base}_desc-atrophy_truth.json"))
         if not hits:
-            print(f"{base}: no truth found", file=sys.stderr)
+            print(f"{base}: no truth found (the subject column must be the full base, e.g. sub-01_ses-1)", file=sys.stderr)
             continue
+        if len(hits) > 1:
+            raise SystemExit(f"{base}: {len(hits)} truth files match: " + ", ".join(str(h) for h in hits))
         s = score_atrophy(hits[0], float(row["volume_before_mm3"]), float(row["volume_after_mm3"]))
         results.append({"subject": base, "score": s})
         print(f"{base}: injected {s['injected_change_pct']:+.1f}%  measured {s['measured_change_pct']:+.1f}%  recovery {s['recovery']:.2f}")
@@ -128,7 +146,8 @@ def main(argv=None) -> int:
     p.add_argument("--out", required=True)
     p.add_argument("--subject", action="append", help="restrict to these subjects (repeatable)")
     p.add_argument("--n", type=int, default=12, help="lesions per subject")
-    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--seed", type=int, default=0, help="mixed with a hash of each image's name, so every subject gets its own stable seed")
+    p.add_argument("--mask", help="brain-mask path pattern with {subject} or {base}; default is a morphological estimate from the T1w")
     p.add_argument("--flair-contrast", type=float, default=0.6, help="FLAIR gain over local white matter at the core")
     p.add_argument("--t1-contrast", type=float, default=-0.2, help="T1w change over local white matter at the core")
     p.set_defaults(func=cmd_inject_lesions)
@@ -138,6 +157,7 @@ def main(argv=None) -> int:
     p.add_argument("--out", required=True)
     p.add_argument("--subject", action="append")
     p.add_argument("--factor", type=float, default=0.95, help="brain volume factor, 0.95 = 5 %% loss")
+    p.add_argument("--mask", help="brain-mask path pattern with {subject} or {base}; default is a morphological estimate from the T1w")
     p.add_argument("--falloff", type=float, default=12.0, help="mm over which the deformation fades outside the brain")
     p.set_defaults(func=cmd_inject_atrophy)
 
@@ -146,6 +166,7 @@ def main(argv=None) -> int:
     p.add_argument("--pred", required=True, help="path pattern with {base} or {subject}, e.g. derivatives/lst/{subject}/{base}_seg.nii.gz")
     p.add_argument("--pipeline", required=True, help="name for the scorecard")
     p.add_argument("--threshold", type=float, default=0.5)
+    p.add_argument("--fp-margin", type=float, default=2.0, help="mm from a truth lesion beyond which predicted voxels count as false positive")
     p.add_argument("--out", default="bidsgate-scores")
     p.set_defaults(func=cmd_score_lesions)
 

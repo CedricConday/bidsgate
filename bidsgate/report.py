@@ -9,16 +9,18 @@ from pathlib import Path
 
 def _pct(x) -> str:
     try:
-        return f"{100 * float(x):.0f}%"
+        v = float(x)
     except (TypeError, ValueError):
         return "-"
+    return "-" if v != v else f"{100 * v:.0f}%"
 
 
 def _f(x, d=2) -> str:
     try:
-        return f"{float(x):.{d}f}"
+        v = float(x)
     except (TypeError, ValueError):
         return "-"
+    return "-" if v != v else f"{v:.{d}f}"
 
 
 def scorecard_lesions(results: list[dict], pipeline: str, out: Path) -> Path:

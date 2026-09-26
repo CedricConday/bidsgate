@@ -17,7 +17,7 @@ import nibabel as nib
 import numpy as np
 from scipy import ndimage as ndi
 
-from .inject_lesions import brain_and_wm
+from .inject_lesions import _float_header, estimate_brain
 
 
 @dataclass
@@ -41,36 +41,45 @@ def displacement(shape: tuple, zooms: tuple, brain: np.ndarray, factor: float, f
     """
     lam = factor ** (1.0 / 3.0)
     c = np.array(ndi.center_of_mass(brain), np.float32)
-    vox = np.array(zooms[:3], np.float32)
     grids = np.indices(shape, dtype=np.float32)
     d = grids - c[:, None, None, None]
     dist_out_mm = ndi.distance_transform_edt(~brain, sampling=zooms[:3]).astype(np.float32)
     w = np.clip(1.0 - dist_out_mm / max(falloff_mm, 1e-3), 0.0, 1.0)
     w[brain] = 1.0
-    # output(x) = input(c + (x - c) / lam): points inside map outward for lam < 1
-    _ = vox  # voxel sizes are isotropic-agnostic here: the scaling is about the centroid in voxel space
+    # output(x) = input(c + (x - c) / lam): points inside map outward for lam < 1.
+    # A linear scaling about the centroid is the same map in voxel and in mm space.
     return d * ((1.0 / lam - 1.0) * w)[None]
 
 
 def inject(t1_path: Path, flair_path: Path | None, out_t1: Path, out_flair: Path | None,
-           out_truth: Path, spec: AtrophySpec) -> dict:
+           out_truth: Path, spec: AtrophySpec, mask_path: Path | None = None) -> dict:
+    """Write the contracted T1w (and FLAIR) and the truth JSON; inputs are checked before anything is written."""
     t1_img = nib.load(t1_path)
     t1 = np.asarray(t1_img.dataobj, dtype=np.float32)
     zooms = t1_img.header.get_zooms()
-    brain, _ = brain_and_wm(t1)
-    disp = displacement(t1.shape, zooms, brain, spec.volume_factor, spec.falloff_mm)
-    nib.save(nib.Nifti1Image(_warp(t1, disp, 1).astype(np.float32), t1_img.affine, t1_img.header), out_t1)
+    fl_img = fl = None
     if flair_path is not None and out_flair is not None:
         fl_img = nib.load(flair_path)
+        if fl_img.shape != t1_img.shape or not np.allclose(fl_img.affine, t1_img.affine, atol=1e-3):
+            raise ValueError(f"FLAIR grid {fl_img.shape} differs from T1w {t1_img.shape} (or the affines differ)")
         fl = np.asarray(fl_img.dataobj, dtype=np.float32)
-        if fl.shape != t1.shape:
-            raise ValueError("FLAIR and T1w must share a grid")
-        nib.save(nib.Nifti1Image(_warp(fl, disp, 1).astype(np.float32), fl_img.affine, fl_img.header), out_flair)
+    if mask_path is not None:
+        m_img = nib.load(mask_path)
+        if m_img.shape != t1_img.shape:
+            raise ValueError(f"brain mask grid {m_img.shape} differs from T1w {t1_img.shape}")
+        brain = np.asarray(m_img.dataobj) > 0
+    else:
+        brain = estimate_brain(t1, zooms)
+    disp = displacement(t1.shape, zooms, brain, spec.volume_factor, spec.falloff_mm)
+    nib.save(nib.Nifti1Image(_warp(t1, disp, 1).astype(np.float32), t1_img.affine, _float_header(t1_img)), out_t1)
+    if fl is not None:
+        nib.save(nib.Nifti1Image(_warp(fl, disp, 1).astype(np.float32), fl_img.affine, _float_header(fl_img)), out_flair)
     voxel_mm3 = float(np.prod(zooms[:3]))
     brain_after = _warp(brain.astype(np.float32), disp, 1) >= 0.5
     truth = {
         "kind": "atrophy", "seed": spec.seed, "volume_factor": spec.volume_factor,
         "falloff_mm": spec.falloff_mm,
+        "brain_mask": "given" if mask_path is not None else "estimated",
         "brain_volume_mm3_before": float(brain.sum() * voxel_mm3),
         "brain_volume_mm3_after_measured": float(brain_after.sum() * voxel_mm3),
         "voxel_mm": [float(z) for z in zooms[:3]],
