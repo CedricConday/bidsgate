@@ -127,6 +127,133 @@
           }
         ]
       }
+    },
+    {
+      "subject": "sub-9001_ses-1",
+      "score": {
+        "dice": 0.8044489741658174,
+        "sensitivity": 0.9166666666666666,
+        "lesions": 12,
+        "detected": 11,
+        "false_positive_components": 32,
+        "false_positive_volume_mm3": 851.4560404419899,
+        "fp_margin_mm": 2.0,
+        "predicted_volume_mm3": 6606.3363137841225,
+        "truth_volume_mm3": 4947.968235015869,
+        "volume_ratio": 1.3351614238410596,
+        "by_size": {
+          "0-100mm3": {
+            "n": 6,
+            "sensitivity": 0.8333333333333334
+          },
+          "100-500mm3": {
+            "n": 2,
+            "sensitivity": 1.0
+          },
+          "500-infmm3": {
+            "n": 4,
+            "sensitivity": 1.0
+          }
+        },
+        "per_lesion": [
+          {
+            "id": 1,
+            "volume_mm3": 608.7680289149284,
+            "voxels": 1189,
+            "bin": "500-infmm3",
+            "detected": true,
+            "overlap_fraction": 0.9957947855340622
+          },
+          {
+            "id": 2,
+            "volume_mm3": 79.36000376939774,
+            "voxels": 155,
+            "bin": "0-100mm3",
+            "detected": true,
+            "overlap_fraction": 0.8516129032258064
+          },
+          {
+            "id": 3,
+            "volume_mm3": 28.16000133752823,
+            "voxels": 55,
+            "bin": "0-100mm3",
+            "detected": false,
+            "overlap_fraction": 0.0
+          },
+          {
+            "id": 4,
+            "volume_mm3": 1498.6240711808205,
+            "voxels": 2927,
+            "bin": "500-infmm3",
+            "detected": true,
+            "overlap_fraction": 0.9665186197471815
+          },
+          {
+            "id": 5,
+            "volume_mm3": 29.18400138616562,
+            "voxels": 57,
+            "bin": "0-100mm3",
+            "detected": true,
+            "overlap_fraction": 0.9824561403508771
+          },
+          {
+            "id": 6,
+            "volume_mm3": 1516.032072007656,
+            "voxels": 2961,
+            "bin": "500-infmm3",
+            "detected": true,
+            "overlap_fraction": 0.9922323539344816
+          },
+          {
+            "id": 7,
+            "volume_mm3": 201.21600955724716,
+            "voxels": 393,
+            "bin": "100-500mm3",
+            "detected": true,
+            "overlap_fraction": 0.9872773536895675
+          },
+          {
+            "id": 8,
+            "volume_mm3": 78.33600372076035,
+            "voxels": 153,
+            "bin": "0-100mm3",
+            "detected": true,
+            "overlap_fraction": 0.9803921568627451
+          },
+          {
+            "id": 9,
+            "volume_mm3": 77.31200367212296,
+            "voxels": 151,
+            "bin": "0-100mm3",
+            "detected": true,
+            "overlap_fraction": 1.0
+          },
+          {
+            "id": 10,
+            "volume_mm3": 30.20800143480301,
+            "voxels": 59,
+            "bin": "0-100mm3",
+            "detected": true,
+            "overlap_fraction": 0.9830508474576272
+          },
+          {
+            "id": 11,
+            "volume_mm3": 195.07200926542282,
+            "voxels": 381,
+            "bin": "100-500mm3",
+            "detected": true,
+            "overlap_fraction": 0.6929133858267716
+          },
+          {
+            "id": 12,
+            "volume_mm3": 605.6960287690163,
+            "voxels": 1183,
+            "bin": "500-infmm3",
+            "detected": true,
+            "overlap_fraction": 0.7836010143702451
+          }
+        ]
+      }
     }
   ]
 }
