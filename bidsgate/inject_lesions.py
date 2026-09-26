@@ -50,16 +50,18 @@ def _otsu(x: np.ndarray) -> float:
 
 
 def estimate_brain(t1: np.ndarray, zooms: tuple, erode_mm: float = 8.0,
-                   volume_ml: tuple = (800.0, 2000.0)) -> np.ndarray:
+                   volume_ml: tuple = (800.0, 2000.0), min_core_ml: float = 100.0) -> np.ndarray:
     """Brain mask from a whole-head T1w by morphology, no atlas.
 
-    Tissue is what lies above an Otsu threshold of the smoothed image; the
-    brain is the largest component of tissue that is more than ``erode_mm``
-    from any non-tissue voxel (this cuts the thin scalp, the optic nerves and
-    the spinal cord), grown back by the same distance inside tissue. The
-    result must have a plausible brain volume or a ValueError is raised: it
-    is a placement mask, not a segmentation, and a wrong one would put
-    lesions in the neck.
+    Tissue is what lies above an Otsu threshold of the smoothed image. The
+    brain core is every piece of tissue more than ``erode_mm`` from any
+    non-tissue voxel that is at least ``min_core_ml`` in size: the erosion
+    cuts the thin scalp, the optic nerves and the spinal cord, and the size
+    rule keeps both hemispheres when a deep fissure splits the core but drops
+    muscle and tongue. The core is grown back by the same distance inside
+    tissue and holes (ventricles) are filled. The result must have a
+    plausible brain volume or a ValueError is raised: it is a placement
+    mask, not a segmentation, and a wrong one would put lesions in the neck.
     """
     vox = np.array(zooms[:3], dtype=float)
     sm = ndi.gaussian_filter(t1, sigma=1.0 / vox)
@@ -70,11 +72,16 @@ def estimate_brain(t1: np.ndarray, zooms: tuple, erode_mm: float = 8.0,
     lab, n = ndi.label(core)
     if n == 0:
         raise ValueError("no tissue thicker than the erosion radius; supply a brain mask")
-    sizes = np.bincount(lab.ravel())
+    sizes = np.bincount(lab.ravel()) * float(np.prod(vox)) / 1000.0
     sizes[0] = 0
-    core = lab == sizes.argmax()
+    keep = np.flatnonzero(sizes >= min_core_ml)
+    if keep.size == 0:
+        keep = np.array([sizes.argmax()])
+    core = np.isin(lab, keep)
     brain = tissue & (ndi.distance_transform_edt(~core, sampling=vox) <= erode_mm)
     brain = ndi.binary_fill_holes(brain)
+    for axis in range(3):  # ventricles open to the outside through narrow channels: fill them slice-wise too
+        brain = np.moveaxis(np.array([ndi.binary_fill_holes(sl) for sl in np.moveaxis(brain, axis, 0)]), 0, axis)
     ml = brain.sum() * float(np.prod(vox)) / 1000.0
     if not volume_ml[0] <= ml <= volume_ml[1]:
         raise ValueError(f"brain estimate is {ml:.0f} ml, outside {volume_ml[0]:.0f}-{volume_ml[1]:.0f} ml; "

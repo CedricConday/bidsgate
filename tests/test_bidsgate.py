@@ -221,3 +221,21 @@ def test_partial_subject_is_not_written_when_flair_grid_differs(tmp_path):
     out = tmp_path / "out"
     assert main(["inject-lesions", str(root), "--out", str(out), "--n", "3"]) == 0
     assert not list((out / "sub-01" / "anat").glob("*.nii.gz"))
+
+
+def test_brain_estimate_keeps_both_hemispheres_and_fills_ventricles(tmp_path):
+    root = phantom(tmp_path)
+    t1_img = nib.load(root / "sub-01/anat/sub-01_T1w.nii.gz")
+    t1 = np.asarray(t1_img.dataobj).copy()
+    zooms = t1_img.header.get_zooms()
+    mid = t1.shape[0] // 2
+    t1[mid - 1:mid + 2, :, :] = np.where(t1[mid - 1:mid + 2] > 250, 0, t1[mid - 1:mid + 2])  # a 4.5 mm fissure through the brain
+    ref = estimate_brain(np.asarray(t1_img.dataobj), zooms)
+    # a hollow (ventricle) connected to the outside by a thin channel
+    c = np.array(t1.shape) // 2
+    t1[c[0] + 10:c[0] + 16, c[1] - 6:c[1] + 6, c[2] - 6:c[2] + 6] = 0
+    t1[c[0] + 10:c[0] + 16, c[1], c[2]:] = 0
+    brain = estimate_brain(t1, zooms)
+    assert brain.sum() > 0.9 * ref.sum()  # the fissure itself is not tissue; everything else is kept
+    assert brain[c[0] - 25, c[1], c[2]] and brain[c[0] + 25, c[1], c[2]]  # both halves
+    assert brain[c[0] + 12, c[1], c[2]]
