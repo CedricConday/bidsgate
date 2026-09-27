@@ -11,6 +11,16 @@ import pandas as pd
 from scipy import ndimage as ndi
 
 SIZE_BINS = [(0, 100), (100, 500), (500, 10**9)]
+HEIGHT_BINS = [("lower", 0.0, 1 / 3), ("middle", 1 / 3, 2 / 3), ("upper", 2 / 3, 1.01)]
+
+
+def _height_bin(frac) -> str:
+    if frac is None:
+        return "unknown"
+    for name, lo, hi in HEIGHT_BINS:
+        if lo <= frac < hi:
+            return name
+    return "unknown"
 
 
 def _bin(vol: float) -> str:
@@ -21,7 +31,8 @@ def _bin(vol: float) -> str:
 
 
 def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold: float = 0.5,
-                  fp_margin_mm: float = 2.0) -> dict:
+                  fp_margin_mm: float = 2.0, regions: Path | None = None,
+                  region_names: dict | None = None) -> dict:
     """Voxel and lesion-wise agreement between a predicted mask and the injected one.
 
     A predicted mask may be probabilistic; it is thresholded at ``threshold``.
@@ -30,6 +41,11 @@ def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold
     from any truth lesion, and false-positive components are the connected
     pieces (18-connectivity) of that residual, so over-segmentation that
     happens to touch a true lesion is still counted.
+
+    Sensitivity is also broken down by the lesion's height in the brain
+    (thirds of the brain mask's superior-inferior extent, recorded at
+    injection) and, when ``regions`` is given (a label image on the truth
+    grid), by the label under each lesion's centre.
     """
     with open(truth_json) as fh:
         truth = json.load(fh)
@@ -42,6 +58,12 @@ def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold
                          "resample it onto the truth image first")
     pb = p >= threshold
     tb = t > 0
+    reg = None
+    if regions is not None:
+        r_img = nib.load(regions)
+        if r_img.shape != t.shape:
+            raise ValueError(f"regions {r_img.shape} is not on the truth grid {t.shape}")
+        reg = np.asarray(r_img.dataobj).astype(np.int64)
     inter = float((pb & tb).sum())
     dice = 2 * inter / (pb.sum() + tb.sum()) if (pb.sum() + tb.sum()) else float("nan")
     voxel_mm3 = float(np.prod(t_img.header.get_zooms()[:3]))
@@ -49,15 +71,24 @@ def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold
     for les in truth["lesions"]:
         sel = t == les["id"]
         hit = bool(pb[sel].any())
-        rows.append({"id": les["id"], "volume_mm3": les["volume_mm3"], "voxels": int(sel.sum()),
-                     "bin": _bin(les["volume_mm3"]), "detected": hit,
-                     "overlap_fraction": float(pb[sel].mean()) if sel.any() else float("nan")})
+        row = {"id": les["id"], "volume_mm3": les["volume_mm3"], "voxels": int(sel.sum()),
+               "bin": _bin(les["volume_mm3"]), "detected": hit,
+               "overlap_fraction": float(pb[sel].mean()) if sel.any() else float("nan"),
+               "height_frac": les.get("height_frac"), "height": _height_bin(les.get("height_frac")),
+               "depth_mm": les.get("depth_mm")}
+        if reg is not None:
+            c = tuple(int(round(v)) for v in les["centre_vox"])
+            label = int(reg[c])
+            row["region"] = (region_names or {}).get(label, str(label))
+        rows.append(row)
     per = pd.DataFrame(rows)
     near_truth = ndi.distance_transform_edt(~tb, sampling=t_img.header.get_zooms()[:3]) <= fp_margin_mm
     residual = pb & ~near_truth
     _, fp = ndi.label(residual, structure=ndi.generate_binary_structure(3, 2))
     fp_volume = float(residual.sum() * voxel_mm3)
     by_bin = per.groupby("bin")["detected"].agg(["count", "mean"]).rename(columns={"count": "n", "mean": "sensitivity"})
+    by_height = per.groupby("height")["detected"].agg(["count", "mean"]).rename(columns={"count": "n", "mean": "sensitivity"})
+    by_region = per.groupby("region")["detected"].agg(["count", "mean"]).rename(columns={"count": "n", "mean": "sensitivity"}) if "region" in per else None
     return {
         "dice": dice,
         "sensitivity": float(per["detected"].mean()) if len(per) else float("nan"),
@@ -70,6 +101,8 @@ def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold
         "truth_volume_mm3": float(tb.sum() * voxel_mm3),
         "volume_ratio": float(pb.sum() / tb.sum()) if tb.sum() else float("nan"),
         "by_size": {k: {"n": int(v["n"]), "sensitivity": float(v["sensitivity"])} for k, v in by_bin.iterrows()},
+        "by_height": {k: {"n": int(v["n"]), "sensitivity": float(v["sensitivity"])} for k, v in by_height.iterrows()},
+        "by_region": ({k: {"n": int(v["n"]), "sensitivity": float(v["sensitivity"])} for k, v in by_region.iterrows()} if by_region is not None else None),
         "per_lesion": rows,
     }
 

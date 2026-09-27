@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bidsgate"
-version = "0.1.0"
+version = "0.2.0"
 description = "Recovery gate for neuroimaging pipelines: inject known lesions or atrophy into real BIDS data, run any BIDS app, score what it recovered."
 readme = "README.md"
 license = {text = "MIT"}

@@ -28,6 +28,21 @@
             "sensitivity": 0.75
           }
         },
+        "by_height": {
+          "lower": {
+            "n": 4,
+            "sensitivity": 0.25
+          },
+          "middle": {
+            "n": 4,
+            "sensitivity": 1.0
+          },
+          "upper": {
+            "n": 4,
+            "sensitivity": 1.0
+          }
+        },
+        "by_region": null,
         "per_lesion": [
           {
             "id": 1,
@@ -35,7 +50,10 @@
             "voxels": 57,
             "bin": "0-100mm3",
             "detected": false,
-            "overlap_fraction": 0.0
+            "overlap_fraction": 0.0,
+            "height_frac": 0.07006369426751592,
+            "height": "lower",
+            "depth_mm": 6.092618575478217
           },
           {
             "id": 2,
@@ -43,7 +61,10 @@
             "voxels": 2955,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9678510998307953
+            "overlap_fraction": 0.9678510998307953,
+            "height_frac": 0.6942675159235668,
+            "height": "upper",
+            "depth_mm": 14.400000201331245
           },
           {
             "id": 3,
@@ -51,7 +72,10 @@
             "voxels": 379,
             "bin": "100-500mm3",
             "detected": false,
-            "overlap_fraction": 0.0
+            "overlap_fraction": 0.0,
+            "height_frac": 0.22929936305732485,
+            "height": "lower",
+            "depth_mm": 9.699484426029997
           },
           {
             "id": 4,
@@ -59,7 +83,10 @@
             "voxels": 51,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.6369426751592356,
+            "height": "middle",
+            "depth_mm": 23.213789004442596
           },
           {
             "id": 5,
@@ -67,7 +94,10 @@
             "voxels": 57,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.19745222929936307,
+            "height": "lower",
+            "depth_mm": 17.599999872120954
           },
           {
             "id": 6,
@@ -75,7 +105,10 @@
             "voxels": 1205,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9684647302904564
+            "overlap_fraction": 0.9684647302904564,
+            "height_frac": 0.5159235668789809,
+            "height": "middle",
+            "depth_mm": 25.09501888045663
           },
           {
             "id": 7,
@@ -83,7 +116,10 @@
             "voxels": 151,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9801324503311258
+            "overlap_fraction": 0.9801324503311258,
+            "height_frac": 0.7643312101910829,
+            "height": "upper",
+            "depth_mm": 15.778466380357463
           },
           {
             "id": 8,
@@ -91,7 +127,10 @@
             "voxels": 147,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.7551020408163265
+            "overlap_fraction": 0.7551020408163265,
+            "height_frac": 0.3821656050955414,
+            "height": "middle",
+            "depth_mm": 8.158430758846928
           },
           {
             "id": 9,
@@ -99,7 +138,10 @@
             "voxels": 2895,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9892918825561312
+            "overlap_fraction": 0.9892918825561312,
+            "height_frac": 0.6496815286624203,
+            "height": "middle",
+            "depth_mm": 10.792589769588742
           },
           {
             "id": 10,
@@ -107,7 +149,10 @@
             "voxels": 139,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.7133757961783439,
+            "height": "upper",
+            "depth_mm": 8.836288292462303
           },
           {
             "id": 11,
@@ -115,7 +160,10 @@
             "voxels": 393,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.8343949044585988,
+            "height": "upper",
+            "depth_mm": 12.132600749784624
           },
           {
             "id": 12,
@@ -123,7 +171,10 @@
             "voxels": 1193,
             "bin": "500-infmm3",
             "detected": false,
-            "overlap_fraction": 0.0
+            "overlap_fraction": 0.0,
+            "height_frac": 0.2611464968152866,
+            "height": "lower",
+            "depth_mm": 14.686047990165974
           }
         ]
       }
@@ -155,6 +206,21 @@
             "sensitivity": 1.0
           }
         },
+        "by_height": {
+          "lower": {
+            "n": 2,
+            "sensitivity": 0.5
+          },
+          "middle": {
+            "n": 7,
+            "sensitivity": 1.0
+          },
+          "upper": {
+            "n": 3,
+            "sensitivity": 1.0
+          }
+        },
+        "by_region": null,
         "per_lesion": [
           {
             "id": 1,
@@ -162,7 +228,10 @@
             "voxels": 1189,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9957947855340622
+            "overlap_fraction": 0.9957947855340622,
+            "height_frac": 0.5753424657534246,
+            "height": "middle",
+            "depth_mm": 22.65568273889129
           },
           {
             "id": 2,
@@ -170,7 +239,10 @@
             "voxels": 155,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.8516129032258064
+            "overlap_fraction": 0.8516129032258064,
+            "height_frac": 0.4726027397260274,
+            "height": "middle",
+            "depth_mm": 17.04582051764901
           },
           {
             "id": 3,
@@ -178,7 +250,10 @@
             "voxels": 55,
             "bin": "0-100mm3",
             "detected": false,
-            "overlap_fraction": 0.0
+            "overlap_fraction": 0.0,
+            "height_frac": 0.0,
+            "height": "lower",
+            "depth_mm": 0.0
           },
           {
             "id": 4,
@@ -186,7 +261,10 @@
             "voxels": 2927,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9665186197471815
+            "overlap_fraction": 0.9665186197471815,
+            "height_frac": 0.3835616438356164,
+            "height": "middle",
+            "depth_mm": 12.211470184324762
           },
           {
             "id": 5,
@@ -194,7 +272,10 @@
             "voxels": 57,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9824561403508771
+            "overlap_fraction": 0.9824561403508771,
+            "height_frac": 0.7876712328767124,
+            "height": "upper",
+            "depth_mm": 16.6661333413942
           },
           {
             "id": 6,
@@ -202,7 +283,10 @@
             "voxels": 2961,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9922323539344816
+            "overlap_fraction": 0.9922323539344816,
+            "height_frac": 0.6643835616438356,
+            "height": "middle",
+            "depth_mm": 11.892854774127933
           },
           {
             "id": 7,
@@ -210,7 +294,10 @@
             "voxels": 393,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.9872773536895675
+            "overlap_fraction": 0.9872773536895675,
+            "height_frac": 0.547945205479452,
+            "height": "middle",
+            "depth_mm": 9.050966596882942
           },
           {
             "id": 8,
@@ -218,7 +305,10 @@
             "voxels": 153,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9803921568627451
+            "overlap_fraction": 0.9803921568627451,
+            "height_frac": 0.2328767123287671,
+            "height": "lower",
+            "depth_mm": 13.646977887247314
           },
           {
             "id": 9,
@@ -226,7 +316,10 @@
             "voxels": 151,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.7808219178082192,
+            "height": "upper",
+            "depth_mm": 10.998181554301304
           },
           {
             "id": 10,
@@ -234,7 +327,10 @@
             "voxels": 59,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9830508474576272
+            "overlap_fraction": 0.9830508474576272,
+            "height_frac": 0.684931506849315,
+            "height": "upper",
+            "depth_mm": 20.396077121554427
           },
           {
             "id": 11,
@@ -242,7 +338,10 @@
             "voxels": 381,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.6929133858267716
+            "overlap_fraction": 0.6929133858267716,
+            "height_frac": 0.5136986301369864,
+            "height": "middle",
+            "depth_mm": 27.95424875029482
           },
           {
             "id": 12,
@@ -250,7 +349,10 @@
             "voxels": 1183,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.7836010143702451
+            "overlap_fraction": 0.7836010143702451,
+            "height_frac": 0.5,
+            "height": "middle",
+            "depth_mm": 7.375635358953309
           }
         ]
       }
@@ -282,6 +384,21 @@
             "sensitivity": 0.75
           }
         },
+        "by_height": {
+          "lower": {
+            "n": 1,
+            "sensitivity": 0.0
+          },
+          "middle": {
+            "n": 8,
+            "sensitivity": 0.75
+          },
+          "upper": {
+            "n": 3,
+            "sensitivity": 1.0
+          }
+        },
+        "by_region": null,
         "per_lesion": [
           {
             "id": 1,
@@ -289,7 +406,10 @@
             "voxels": 2937,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.972080354102826
+            "overlap_fraction": 0.972080354102826,
+            "height_frac": 0.6278026905829597,
+            "height": "middle",
+            "depth_mm": 19.332872652068037
           },
           {
             "id": 2,
@@ -297,7 +417,10 @@
             "voxels": 147,
             "bin": "0-100mm3",
             "detected": false,
-            "overlap_fraction": 0.0
+            "overlap_fraction": 0.0,
+            "height_frac": 0.6591928251121076,
+            "height": "middle",
+            "depth_mm": 18.89761911614317
           },
           {
             "id": 3,
@@ -305,7 +428,10 @@
             "voxels": 145,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9586206896551724
+            "overlap_fraction": 0.9586206896551724,
+            "height_frac": 0.8834080717488789,
+            "height": "upper",
+            "depth_mm": 6.6932800555420195
           },
           {
             "id": 4,
@@ -313,7 +439,10 @@
             "voxels": 1187,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9890480202190396
+            "overlap_fraction": 0.9890480202190396,
+            "height_frac": 0.6547085201793722,
+            "height": "middle",
+            "depth_mm": 23.241341827445908
           },
           {
             "id": 5,
@@ -321,7 +450,10 @@
             "voxels": 2961,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9294157379263762
+            "overlap_fraction": 0.9294157379263762,
+            "height_frac": 0.4125560538116592,
+            "height": "middle",
+            "depth_mm": 13.41044371699332
           },
           {
             "id": 6,
@@ -329,7 +461,10 @@
             "voxels": 57,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.6547085201793722,
+            "height": "middle",
+            "depth_mm": 25.599998474121094
           },
           {
             "id": 7,
@@ -337,7 +472,10 @@
             "voxels": 57,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9649122807017544
+            "overlap_fraction": 0.9649122807017544,
+            "height_frac": 0.672645739910314,
+            "height": "upper",
+            "depth_mm": 9.66643692291679
           },
           {
             "id": 8,
@@ -345,7 +483,10 @@
             "voxels": 55,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9636363636363636
+            "overlap_fraction": 0.9636363636363636,
+            "height_frac": 0.5381165919282511,
+            "height": "middle",
+            "depth_mm": 9.765244618568435
           },
           {
             "id": 9,
@@ -353,7 +494,10 @@
             "voxels": 405,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.9925925925925926
+            "overlap_fraction": 0.9925925925925926,
+            "height_frac": 0.7399103139013453,
+            "height": "upper",
+            "depth_mm": 20.692027369087516
           },
           {
             "id": 10,
@@ -361,7 +505,10 @@
             "voxels": 153,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.5650224215246636,
+            "height": "middle",
+            "depth_mm": 11.784736029315196
           },
           {
             "id": 11,
@@ -369,7 +516,10 @@
             "voxels": 1181,
             "bin": "500-infmm3",
             "detected": false,
-            "overlap_fraction": 0.0
+            "overlap_fraction": 0.0,
+            "height_frac": 0.3632286995515695,
+            "height": "middle",
+            "depth_mm": 8.158431343318554
           },
           {
             "id": 12,
@@ -377,7 +527,10 @@
             "voxels": 379,
             "bin": "100-500mm3",
             "detected": false,
-            "overlap_fraction": 0.0
+            "overlap_fraction": 0.0,
+            "height_frac": 0.25112107623318386,
+            "height": "lower",
+            "depth_mm": 17.435595812450583
           }
         ]
       }
@@ -409,6 +562,21 @@
             "sensitivity": 1.0
           }
         },
+        "by_height": {
+          "lower": {
+            "n": 1,
+            "sensitivity": 1.0
+          },
+          "middle": {
+            "n": 6,
+            "sensitivity": 1.0
+          },
+          "upper": {
+            "n": 5,
+            "sensitivity": 1.0
+          }
+        },
+        "by_region": null,
         "per_lesion": [
           {
             "id": 1,
@@ -416,7 +584,10 @@
             "voxels": 379,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.762532981530343
+            "overlap_fraction": 0.762532981530343,
+            "height_frac": 0.5454545454545454,
+            "height": "middle",
+            "depth_mm": 25.612497240162263
           },
           {
             "id": 2,
@@ -424,7 +595,10 @@
             "voxels": 1163,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9965606190885641
+            "overlap_fraction": 0.9965606190885641,
+            "height_frac": 0.6,
+            "height": "middle",
+            "depth_mm": 27.457603397266762
           },
           {
             "id": 3,
@@ -432,7 +606,10 @@
             "voxels": 2953,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.6173383000338639
+            "overlap_fraction": 0.6173383000338639,
+            "height_frac": 0.5333333333333333,
+            "height": "middle",
+            "depth_mm": 43.568796339983095
           },
           {
             "id": 4,
@@ -440,7 +617,10 @@
             "voxels": 151,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9867549668874173
+            "overlap_fraction": 0.9867549668874173,
+            "height_frac": 0.41818181818181815,
+            "height": "middle",
+            "depth_mm": 26.73723904561255
           },
           {
             "id": 5,
@@ -448,7 +628,10 @@
             "voxels": 405,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.9629629629629629
+            "overlap_fraction": 0.9629629629629629,
+            "height_frac": 0.6787878787878788,
+            "height": "upper",
+            "depth_mm": 24.079865915584204
           },
           {
             "id": 6,
@@ -456,7 +639,10 @@
             "voxels": 153,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9803921568627451
+            "overlap_fraction": 0.9803921568627451,
+            "height_frac": 0.503030303030303,
+            "height": "middle",
+            "depth_mm": 28.56571253567107
           },
           {
             "id": 7,
@@ -464,7 +650,10 @@
             "voxels": 55,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.8181818181818182
+            "overlap_fraction": 0.8181818181818182,
+            "height_frac": 0.3878787878787879,
+            "height": "middle",
+            "depth_mm": 10.9981816756981
           },
           {
             "id": 8,
@@ -472,7 +661,10 @@
             "voxels": 2961,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9743329956095913
+            "overlap_fraction": 0.9743329956095913,
+            "height_frac": 0.18181818181818182,
+            "height": "lower",
+            "depth_mm": 18.434749756602674
           },
           {
             "id": 9,
@@ -480,7 +672,10 @@
             "voxels": 1165,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.8755364806866953
+            "overlap_fraction": 0.8755364806866953,
+            "height_frac": 0.6909090909090909,
+            "height": "upper",
+            "depth_mm": 28.54330019695649
           },
           {
             "id": 10,
@@ -488,7 +683,10 @@
             "voxels": 59,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9830508474576272
+            "overlap_fraction": 0.9830508474576272,
+            "height_frac": 0.6787878787878788,
+            "height": "upper",
+            "depth_mm": 23.54230143620194
           },
           {
             "id": 11,
@@ -496,7 +694,10 @@
             "voxels": 151,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.6666666666666666,
+            "height": "upper",
+            "depth_mm": 24.10643064882708
           },
           {
             "id": 12,
@@ -504,7 +705,10 @@
             "voxels": 51,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.7515151515151515,
+            "height": "upper",
+            "depth_mm": 14.35548640849787
           }
         ]
       }
@@ -536,6 +740,21 @@
             "sensitivity": 1.0
           }
         },
+        "by_height": {
+          "lower": {
+            "n": 3,
+            "sensitivity": 1.0
+          },
+          "middle": {
+            "n": 6,
+            "sensitivity": 1.0
+          },
+          "upper": {
+            "n": 3,
+            "sensitivity": 1.0
+          }
+        },
+        "by_region": null,
         "per_lesion": [
           {
             "id": 1,
@@ -543,7 +762,10 @@
             "voxels": 1165,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.7407725321888412
+            "overlap_fraction": 0.7407725321888412,
+            "height_frac": 0.09210526315789473,
+            "height": "lower",
+            "depth_mm": 10.400000081612516
           },
           {
             "id": 2,
@@ -551,7 +773,10 @@
             "voxels": 57,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.8947368421052632
+            "overlap_fraction": 0.8947368421052632,
+            "height_frac": 0.5921052631578947,
+            "height": "middle",
+            "depth_mm": 21.732924284576555
           },
           {
             "id": 3,
@@ -559,7 +784,10 @@
             "voxels": 2899,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.997930320800276
+            "overlap_fraction": 0.997930320800276,
+            "height_frac": 0.7302631578947368,
+            "height": "upper",
+            "depth_mm": 21.496046199978224
           },
           {
             "id": 4,
@@ -567,7 +795,10 @@
             "voxels": 393,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.9287531806615776
+            "overlap_fraction": 0.9287531806615776,
+            "height_frac": 0.3881578947368421,
+            "height": "middle",
+            "depth_mm": 16.079800806377506
           },
           {
             "id": 5,
@@ -575,7 +806,10 @@
             "voxels": 139,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9496402877697842
+            "overlap_fraction": 0.9496402877697842,
+            "height_frac": 0.48026315789473684,
+            "height": "middle",
+            "depth_mm": 8.504116776908932
           },
           {
             "id": 6,
@@ -583,7 +817,10 @@
             "voxels": 371,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.9946091644204852
+            "overlap_fraction": 0.9946091644204852,
+            "height_frac": 0.8289473684210527,
+            "height": "upper",
+            "depth_mm": 13.14534075983463
           },
           {
             "id": 7,
@@ -591,7 +828,10 @@
             "voxels": 2939,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.99455597141885
+            "overlap_fraction": 0.99455597141885,
+            "height_frac": 0.6842105263157895,
+            "height": "upper",
+            "depth_mm": 8.3138439772747
           },
           {
             "id": 8,
@@ -599,7 +839,10 @@
             "voxels": 1173,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9710144927536232
+            "overlap_fraction": 0.9710144927536232,
+            "height_frac": 0.5657894736842105,
+            "height": "middle",
+            "depth_mm": 12.749901847461562
           },
           {
             "id": 9,
@@ -607,7 +850,10 @@
             "voxels": 59,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.7796610169491526
+            "overlap_fraction": 0.7796610169491526,
+            "height_frac": 0.3092105263157895,
+            "height": "lower",
+            "depth_mm": 7.756287832114075
           },
           {
             "id": 10,
@@ -615,7 +861,10 @@
             "voxels": 149,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9664429530201343
+            "overlap_fraction": 0.9664429530201343,
+            "height_frac": 0.5921052631578947,
+            "height": "middle",
+            "depth_mm": 11.784735737986862
           },
           {
             "id": 11,
@@ -623,7 +872,10 @@
             "voxels": 55,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.5592105263157895,
+            "height": "middle",
+            "depth_mm": 30.911486252182687
           },
           {
             "id": 12,
@@ -631,7 +883,10 @@
             "voxels": 155,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.23684210526315788,
+            "height": "lower",
+            "depth_mm": 14.333177855261999
           }
         ]
       }
@@ -663,6 +918,21 @@
             "sensitivity": 1.0
           }
         },
+        "by_height": {
+          "lower": {
+            "n": 1,
+            "sensitivity": 0.0
+          },
+          "middle": {
+            "n": 5,
+            "sensitivity": 1.0
+          },
+          "upper": {
+            "n": 6,
+            "sensitivity": 1.0
+          }
+        },
+        "by_region": null,
         "per_lesion": [
           {
             "id": 1,
@@ -670,7 +940,10 @@
             "voxels": 55,
             "bin": "0-100mm3",
             "detected": false,
-            "overlap_fraction": 0.0
+            "overlap_fraction": 0.0,
+            "height_frac": 0.29375,
+            "height": "lower",
+            "depth_mm": 7.418894675562686
           },
           {
             "id": 2,
@@ -678,7 +951,10 @@
             "voxels": 151,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9271523178807947
+            "overlap_fraction": 0.9271523178807947,
+            "height_frac": 0.68125,
+            "height": "upper",
+            "depth_mm": 23.745315518623453
           },
           {
             "id": 3,
@@ -686,7 +962,10 @@
             "voxels": 55,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9818181818181818
+            "overlap_fraction": 0.9818181818181818,
+            "height_frac": 0.74375,
+            "height": "upper",
+            "depth_mm": 17.120747431656167
           },
           {
             "id": 4,
@@ -694,7 +973,10 @@
             "voxels": 1189,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9865433137089992
+            "overlap_fraction": 0.9865433137089992,
+            "height_frac": 0.69375,
+            "height": "upper",
+            "depth_mm": 12.924395714953572
           },
           {
             "id": 5,
@@ -702,7 +984,10 @@
             "voxels": 401,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.9950124688279302
+            "overlap_fraction": 0.9950124688279302,
+            "height_frac": 0.8625,
+            "height": "upper",
+            "depth_mm": 11.256997885420631
           },
           {
             "id": 6,
@@ -710,7 +995,10 @@
             "voxels": 2955,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.7884940778341794
+            "overlap_fraction": 0.7884940778341794,
+            "height_frac": 0.6125,
+            "height": "middle",
+            "depth_mm": 20.254381187645933
           },
           {
             "id": 7,
@@ -718,7 +1006,10 @@
             "voxels": 155,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.2064516129032258
+            "overlap_fraction": 0.2064516129032258,
+            "height_frac": 0.50625,
+            "height": "middle",
+            "depth_mm": 10.399999494736015
           },
           {
             "id": 8,
@@ -726,7 +1017,10 @@
             "voxels": 55,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 1.0
+            "overlap_fraction": 1.0,
+            "height_frac": 0.575,
+            "height": "middle",
+            "depth_mm": 18.67618782575914
           },
           {
             "id": 9,
@@ -734,7 +1028,10 @@
             "voxels": 401,
             "bin": "100-500mm3",
             "detected": true,
-            "overlap_fraction": 0.9925187032418953
+            "overlap_fraction": 0.9925187032418953,
+            "height_frac": 0.5375,
+            "height": "middle",
+            "depth_mm": 16.43411054353095
           },
           {
             "id": 10,
@@ -742,7 +1039,10 @@
             "voxels": 1195,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9732217573221758
+            "overlap_fraction": 0.9732217573221758,
+            "height_frac": 0.79375,
+            "height": "upper",
+            "depth_mm": 14.2435951435397
           },
           {
             "id": 11,
@@ -750,7 +1050,10 @@
             "voxels": 2887,
             "bin": "500-infmm3",
             "detected": true,
-            "overlap_fraction": 0.9508139937651542
+            "overlap_fraction": 0.9508139937651542,
+            "height_frac": 0.71875,
+            "height": "upper",
+            "depth_mm": 20.505608540890304
           },
           {
             "id": 12,
@@ -758,7 +1061,10 @@
             "voxels": 139,
             "bin": "0-100mm3",
             "detected": true,
-            "overlap_fraction": 0.9424460431654677
+            "overlap_fraction": 0.9424460431654677,
+            "height_frac": 0.5,
+            "height": "middle",
+            "depth_mm": 10.733126451935036
           }
         ]
       }

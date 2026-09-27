@@ -89,6 +89,10 @@ def cmd_inject_atrophy(a) -> int:
 def cmd_score_lesions(a) -> int:
     truth_root = Path(a.truth)
     results = []
+    region_names = None
+    if a.region_names:
+        names = pd.read_csv(a.region_names, sep="\t")
+        region_names = {int(r.iloc[0]): str(r.iloc[1]) for _, r in names.iterrows()}
     for truth_json in sorted(truth_root.glob("sub-*/**/anat/*desc-lesion_truth.json")):
         mask = Path(str(truth_json).replace("desc-lesion_truth.json", "desc-lesionTruth_mask.nii.gz"))
         base = truth_json.name.replace("_desc-lesion_truth.json", "")
@@ -96,9 +100,14 @@ def cmd_score_lesions(a) -> int:
         if not pred.exists():
             print(f"{base}: prediction not found at {pred}", file=sys.stderr)
             continue
-        s = score_lesions(truth_json, mask, pred, a.threshold, a.fp_margin)
+        regions = Path(a.regions.format(base=base, subject=base.split("_")[0])) if a.regions else None
+        if regions is not None and not regions.exists():
+            print(f"{base}: regions image not found at {regions}", file=sys.stderr)
+            regions = None
+        s = score_lesions(truth_json, mask, pred, a.threshold, a.fp_margin, regions, region_names)
         results.append({"subject": base, "score": s})
-        print(f"{base}: Dice {s['dice']:.2f}  detected {s['detected']}/{s['lesions']}  FP {s['false_positive_components']}  volume ratio {s['volume_ratio']:.2f}")
+        heights = " ".join(f"{k[0]}={v['sensitivity']:.2f}" for k, v in s["by_height"].items() if k != "unknown")
+        print(f"{base}: Dice {s['dice']:.2f}  detected {s['detected']}/{s['lesions']}  FP {s['false_positive_components']}  volume ratio {s['volume_ratio']:.2f}  by height {heights}")
     if not results:
         raise SystemExit("nothing scored")
     out = Path(a.out)
@@ -167,6 +176,8 @@ def main(argv=None) -> int:
     p.add_argument("--pipeline", required=True, help="name for the scorecard")
     p.add_argument("--threshold", type=float, default=0.5)
     p.add_argument("--fp-margin", type=float, default=2.0, help="mm from a truth lesion beyond which predicted voxels count as false positive")
+    p.add_argument("--regions", help="label image on the truth grid, pattern with {subject} or {base}; sensitivity is also reported per label under each lesion centre")
+    p.add_argument("--region-names", help="TSV with two columns, label and name, for the --regions image")
     p.add_argument("--out", default="bidsgate-scores")
     p.set_defaults(func=cmd_score_lesions)
 

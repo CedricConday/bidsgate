@@ -252,3 +252,29 @@ def test_brain_estimate_drops_a_large_piece_below_the_brain(tmp_path):
     t1[c[0] - 25:c[0] + 25, c[1] - 25:c[1] + 25, 2:c[2] - 45] = 300  # a 75 x 75 x ~40 mm block well below the brain, 4.5 mm gap
     brain = estimate_brain(t1, zooms, affine=t1_img.affine)
     assert abs(int(brain.sum()) - int(ref.sum())) < 0.03 * ref.sum()
+
+
+def test_truth_records_height_and_scoring_reports_by_height_and_region(tmp_path):
+    root = phantom(tmp_path)
+    out = tmp_path / "out"
+    out.mkdir()
+    spec = LesionSpec(n=9, volume_mm3=(100.0, 300.0, 1000.0), seed=11)
+    truth = inject_lesions(root / "sub-01/anat/sub-01_T1w.nii.gz", None, out / "T1w.nii.gz", None, out / "mask.nii.gz", out / "truth.json", spec)
+    fracs = [les["height_frac"] for les in truth["lesions"]]
+    assert all(0.0 <= f <= 1.0 for f in fracs) and all(les["depth_mm"] > 0 for les in truth["lesions"])
+    ids = np.asarray(nib.load(out / "mask.nii.gz").dataobj)
+    # a prediction that finds everything except the lowest lesion
+    lowest = min(truth["lesions"], key=lambda l: l["height_frac"])["id"]
+    pred = (ids > 0) & (ids != lowest)
+    aff = nib.load(out / "mask.nii.gz").affine
+    nib.save(nib.Nifti1Image(pred.astype(np.uint8), aff), out / "pred.nii.gz")
+    # a two-label region image: label 1 below the brain centre, label 2 above
+    reg = np.zeros(ids.shape, np.int16)
+    reg[:, :, : ids.shape[2] // 2] = 1
+    reg[:, :, ids.shape[2] // 2 :] = 2
+    nib.save(nib.Nifti1Image(reg, aff), out / "regions.nii.gz")
+    s = score_lesions(out / "truth.json", out / "mask.nii.gz", out / "pred.nii.gz", regions=out / "regions.nii.gz", region_names={1: "below", 2: "above"})
+    assert s["detected"] == 8 and set(s["by_height"]) <= {"lower", "middle", "upper"}
+    assert s["by_height"]["lower"]["sensitivity"] < 1.0
+    assert set(s["by_region"]) <= {"below", "above"} and sum(v["n"] for v in s["by_region"].values()) == 9
+    assert s["by_region"]["below"]["sensitivity"] < 1.0 and s["by_region"].get("above", {"sensitivity": 1.0})["sensitivity"] == 1.0

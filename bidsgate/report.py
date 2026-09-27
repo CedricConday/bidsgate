@@ -31,6 +31,7 @@ def scorecard_lesions(results: list[dict], pipeline: str, out: Path) -> Path:
         rows.append(f"<tr><td>{html.escape(r['subject'])}</td><td>{_f(s['dice'])}</td><td>{s['detected']}/{s['lesions']} ({_pct(s['sensitivity'])})</td>"
                     f"<td>{s['false_positive_components']}</td><td>{_f(s['volume_ratio'])}</td>"
                     + "".join(f"<td>{_pct(v['sensitivity'])} (n={v['n']})</td>" for _, v in sorted(s['by_size'].items()))
+                    + "".join(f"<td>{_pct(s['by_height'].get(h, {}).get('sensitivity'))} (n={s['by_height'].get(h, {}).get('n', 0)})</td>" for h in ('lower', 'middle', 'upper'))
                     + "</tr>")
     n = len(results)
     dice = sum(r["score"]["dice"] for r in results) / n if n else float("nan")
@@ -44,7 +45,8 @@ th{{background:#f4f4f4}}.big{{font-size:2rem;margin:.2rem 0}}.grid{{display:flex
 <h1>bidsgate scorecard: {html.escape(pipeline)}</h1>
 <p class="note">Synthetic lesions with a known mask were injected into real T1w/FLAIR images; the pipeline was run on the result; this is what it recovered. Generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}. Nothing here is evidence about any disease; it is a test of software.</p>
 <div class="grid"><div><div class="big">{_f(dice)}</div>mean Dice</div><div><div class="big">{_pct(sens)}</div>lesion-wise sensitivity</div><div><div class="big">{fp}</div>false-positive components</div><div><div class="big">{n}</div>subjects</div></div>
-<table><tr><th>subject</th><th>Dice</th><th>detected</th><th>FP comps</th><th>volume ratio</th>{''.join(f'<th>sens {html.escape(b)}</th>' for b in bins)}</tr>{''.join(rows)}</table>
+<table><tr><th>subject</th><th>Dice</th><th>detected</th><th>FP comps</th><th>volume ratio</th>{''.join(f'<th>sens {html.escape(b)}</th>' for b in bins)}<th>sens lower third</th><th>sens middle third</th><th>sens upper third</th></tr>{''.join(rows)}</table>
+<p>Height thirds are of the brain mask's superior-inferior extent, recorded at injection; a miss pattern by height is the first thing to check against a per-region atlas (<code>--regions</code>).</p>
 <p class="note">Sensitivity by injected lesion volume shows the detection floor: the size below which the pipeline stops seeing lesions. Volume ratio is predicted over injected volume; under 1 means the pipeline under-segments what it does find.</p>
 </body></html>"""
     out.write_text(doc)

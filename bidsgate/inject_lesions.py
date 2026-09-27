@@ -246,15 +246,23 @@ def inject(t1_path: Path, flair_path: Path | None, out_t1: Path, out_flair: Path
         flair_note = {"wm_reference": wm_ref_fl, "contrast": spec.flair_contrast}
     nib.save(nib.Nifti1Image(labels, t1_img.affine), out_mask)
     voxel_mm3 = float(np.prod(zooms[:3]))
+    si = _si_axis(t1_img.affine)
+    lo, hi = _extent(brain, si)
+    up = 1.0 if t1_img.affine[2, si] > 0 else -1.0  # which way along the axis is superior
     for les in lesions:
         les["voxels"] = int((labels == les["id"]).sum())
         les["volume_mm3"] = les["voxels"] * voxel_mm3  # the label's volume, which is what is scored
+        c = les["centre_vox"]
+        frac = (c[si] - lo) / max(hi - lo, 1.0)
+        les["height_frac"] = float(frac if up > 0 else 1.0 - frac)  # 0 = bottom of the brain mask, 1 = top
+        les["depth_mm"] = float(depth[tuple(int(round(v)) for v in c)])
     truth = {
         "kind": "lesions", "seed": spec.seed, "n": len(lesions), "edge_mm": spec.edge_mm,
         "edge": "field is 0.5 on the ellipsoid surface, erf falloff over edge_mm; label = inside the surface",
         "t1": {"wm_reference": wm_ref_t1, "contrast": spec.t1_contrast}, "flair": flair_note,
         "brain_mask": "given" if mask is not None else "estimated",
         "brain_volume_mm3": float(brain.sum() * voxel_mm3),
+        "height": "height_frac is the lesion centre's position along the superior-inferior axis of the brain mask, 0 bottom to 1 top; depth_mm its distance from the mask edge",
         "voxel_mm": [float(z) for z in zooms[:3]],
         "lesions": lesions,
         "total_volume_mm3": float(sum(les["volume_mm3"] for les in lesions)),

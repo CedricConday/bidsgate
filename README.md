@@ -47,14 +47,20 @@ FLAIR. Scorecard, JSON and per-lesion tables are in `results/lst-ai-v2/`.
 | sub-9008 | 11 of 12 | 0.87 | 1.06 | 0.83 / 1.00 / 1.00 | 2 (see JSON) |
 | **All** | **64 of 72** | **0.82 mean** | | **32/36, 10/12, 22/24** | |
 
-What the per-lesion tables show: the misses are not about size. Lesions of 26 to 30 mm3
-were found in every subject, and the eight misses span 28 to 611 mm3. Seven of the eight
-are among the four lowest-placed lesions of their subject, at cerebellum and brainstem
-level, where these controls' own FLAIR is brightest; the one exception is a 75 mm3 lesion
-at mid-height in sub-9002. Whether that is a weakness of the model or a weakness of
-injecting supratentorial-looking lesions into infratentorial tissue is exactly the
-question the gate raises and a per-region breakdown would answer; it is on the list
-below.
+What the per-lesion tables show: the misses are not about size, they are about height.
+Lesions of 26 to 30 mm3 were found in every subject, and the eight misses span 28 to
+611 mm3. Split by where the lesion sits in the brain (thirds of the brain mask's
+superior-inferior extent, recorded at injection and reported by `score-lesions`):
+
+| Height in brain | Detected |
+|---|---|
+| Lower third (cerebellum, brainstem, inferior temporal level) | 6 of 12 |
+| Middle third | 34 of 36 |
+| Upper third | 24 of 24 |
+
+Whether that is a weakness of the model or a weakness of injecting supratentorial-looking
+lesions into infratentorial tissue is exactly the question the gate raises; `--regions`
+with an atlas in subject space turns the height split into a per-structure one.
 
 The extra components on a healthy control are not necessarily wrong: a control can carry
 real incidental white-matter hyperintensities, and the gate cannot tell those from false
@@ -97,7 +103,8 @@ The soft field is 0.5 on the ellipsoid surface and falls off over 1 mm on either
 so the truth label (the voxels inside the surface) is exactly what a half-maximum
 segmenter would recover; a perfect segmenter scores Dice 1 and volume ratio 1, not 2.
 The truth is the label map plus a JSON with every lesion's centre, axes, label volume,
-nominal volume and voxel count, the seed, the contrasts and the brain volume.
+nominal volume, voxel count, height in the brain and depth from the brain edge, the seed,
+the contrasts and the brain volume.
 
 T1w and FLAIR must share grid and affine; a subject that does not is skipped with a
 message and nothing is written for it. Every image gets its own seed (a hash of its name
@@ -119,8 +126,10 @@ their sidecars carrying what was done, and the truth files next to them.
 
 `score-lesions` compares a predicted mask (binary or probabilistic, thresholded at 0.5)
 with the truth, which must be on the same grid and affine: Dice, lesion-wise sensitivity
-(a lesion is detected when any predicted voxel overlaps it), sensitivity by size bin, and
-the predicted-over-injected volume ratio. False positives are every predicted voxel
+(a lesion is detected when any predicted voxel overlaps it), sensitivity by size bin, by
+height in the brain (lower, middle, upper third of the brain mask, recorded at injection),
+by region when you pass `--regions` (a label image on the truth grid, names via
+`--region-names label<TAB>name`), and the predicted-over-injected volume ratio. False positives are every predicted voxel
 farther than 2 mm (`--fp-margin`) from any injected lesion, reported as volume and as
 18-connected components, so over-segmentation that happens to touch a true lesion still
 counts. `score-atrophy` takes the volumes your tool reported before and after injection
