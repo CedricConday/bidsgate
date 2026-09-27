@@ -7,6 +7,7 @@ DERIV=${1:-derivatives/bidsgate-lesions}
 OUT=${2:-derivatives/lst-ai}
 for d in "$ROOT/$DERIV"/sub-*/; do
   S=$(basename "$d")
+  if ! ls "$d"/*/anat/*desc-lesion_truth.json "$d"/anat/*desc-lesion_truth.json >/dev/null 2>&1; then echo "$S was refused at injection (no truth file); skipping"; continue; fi
   if ls "$ROOT/$OUT/$S"/*seg-lst.nii.gz >/dev/null 2>&1; then echo "$S already segmented"; continue; fi
   "$ROOT/scripts/run_lst_ai.sh" "$S" "$DERIV" "$OUT"
 done
