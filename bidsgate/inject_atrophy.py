@@ -69,7 +69,7 @@ def inject(t1_path: Path, flair_path: Path | None, out_t1: Path, out_flair: Path
             raise ValueError(f"brain mask grid {m_img.shape} differs from T1w {t1_img.shape}")
         brain = np.asarray(m_img.dataobj) > 0
     else:
-        brain = estimate_brain(t1, zooms)
+        brain = estimate_brain(t1, zooms, affine=t1_img.affine)
     disp = displacement(t1.shape, zooms, brain, spec.volume_factor, spec.falloff_mm)
     nib.save(nib.Nifti1Image(_warp(t1, disp, 1).astype(np.float32), t1_img.affine, _float_header(t1_img)), out_t1)
     if fl is not None:

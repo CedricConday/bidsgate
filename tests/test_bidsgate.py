@@ -239,3 +239,16 @@ def test_brain_estimate_keeps_both_hemispheres_and_fills_ventricles(tmp_path):
     assert brain.sum() > 0.9 * ref.sum()  # the fissure itself is not tissue; everything else is kept
     assert brain[c[0] - 25, c[1], c[2]] and brain[c[0] + 25, c[1], c[2]]  # both halves
     assert brain[c[0] + 12, c[1], c[2]]
+
+
+def test_brain_estimate_drops_a_large_piece_below_the_brain(tmp_path):
+    """A neck-sized block of tissue under the brain, thicker than the erosion, is not brain."""
+    root = phantom(tmp_path)
+    t1_img = nib.load(root / "sub-01/anat/sub-01_T1w.nii.gz")
+    t1 = np.asarray(t1_img.dataobj).copy()
+    zooms = t1_img.header.get_zooms()
+    ref = estimate_brain(t1, zooms, affine=t1_img.affine)
+    c = np.array(t1.shape) // 2
+    t1[c[0] - 25:c[0] + 25, c[1] - 25:c[1] + 25, 2:c[2] - 45] = 300  # a 75 x 75 x ~40 mm block well below the brain, 4.5 mm gap
+    brain = estimate_brain(t1, zooms, affine=t1_img.affine)
+    assert abs(int(brain.sum()) - int(ref.sum())) < 0.03 * ref.sum()

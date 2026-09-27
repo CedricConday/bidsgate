@@ -66,13 +66,16 @@ different grid from its T1w, and sub-9006's FLAIR shares the grid but not the af
 (17 mm apart), so it was never co-registered. A shape-only check had accepted it. The
 gate refusing an input is a result too.
 
-One caveat on the placement mask, found while writing this: re-running the brain
-estimate on the *injected* T1w of four subjects gives a different volume from the
-original (up to 2.1 l against 1.4 l for sub-9003), so the estimate is sensitive to small
-intensity changes. The lesions were placed with the estimate from the original image,
-which passed the volume gate for all six, and the mask volumes are recorded in each
-truth JSON. Tracked as an issue; supply `--mask` from a real brain extraction if you need
-placement to be exactly reproducible across preprocessing variants.
+One correction on the placement mask, found while writing this and fixed in the version
+after 0.1.0: five of the six controls were placed with an earlier estimator that kept only
+the largest core piece, the sixth with a version that kept every piece over 100 ml; on this
+data the extra piece is neck tissue, so that version reported 1.7 to 2.1 l for four
+subjects. The estimator now keeps a second piece only when it sits level with the largest
+along the superior-inferior axis (a hemisphere split by a deep fissure), and drops what
+lies below (neck, face). All eight controls now measure 0.8 to 1.5 l on their original
+images. The placements above were made with the largest-piece rule and are unaffected.
+Pass `--mask` from a real brain extraction if you need placement to be exactly
+reproducible across preprocessing variants.
 
 ## Injections
 
@@ -83,9 +86,9 @@ that estimate (gain 0.6 and −0.2 at the core by default). Sizes cycle through 
 lesions touch, and every lesion lies deeper inside the brain than its own longest axis.
 
 The brain mask is estimated from the T1w by morphology (tissue above an Otsu threshold,
-eroded by 8 mm to cut scalp, optic nerves and cord, every remaining piece over 100 ml
-grown back inside tissue, ventricles filled) and must land between 800 and 2000 ml or
-the subject is refused. Pass your own mask with `--mask "{subject}_brainmask.nii.gz"`
+eroded by 8 mm to cut scalp, optic nerves and cord; the largest remaining piece plus any
+piece over 100 ml that sits level with it, grown back inside tissue, ventricles filled)
+and must land between 700 and 2000 ml or the subject is refused. Pass your own mask with `--mask "{subject}_brainmask.nii.gz"`
 if you have a better one. White matter is bright T1w tissue more than 6 mm inside that
 mask whose FLAIR is within 0.6 to 1.4 of the FLAIR white-matter median, which excludes
 CSF and anything outside the FLAIR field of view.

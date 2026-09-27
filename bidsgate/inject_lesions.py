@@ -49,8 +49,19 @@ def _otsu(x: np.ndarray) -> float:
     return float(mids[var.argmax()])
 
 
+def _si_axis(affine: np.ndarray) -> int:
+    """Voxel axis that runs superior-inferior (largest |z| component in the affine)."""
+    return int(np.argmax(np.abs(affine[2, :3])))
+
+
+def _extent(mask: np.ndarray, axis: int) -> tuple[float, float]:
+    idx = np.flatnonzero(mask.any(axis=tuple(a for a in range(3) if a != axis)))
+    return float(idx.min()), float(idx.max())
+
+
 def estimate_brain(t1: np.ndarray, zooms: tuple, erode_mm: float = 8.0,
-                   volume_ml: tuple = (800.0, 2000.0), min_core_ml: float = 100.0) -> np.ndarray:
+                   volume_ml: tuple = (700.0, 2000.0), min_core_ml: float = 100.0,
+                   affine: np.ndarray | None = None) -> np.ndarray:
     """Brain mask from a whole-head T1w by morphology, no atlas.
 
     Tissue is what lies above an Otsu threshold of the smoothed image. The
@@ -74,9 +85,19 @@ def estimate_brain(t1: np.ndarray, zooms: tuple, erode_mm: float = 8.0,
         raise ValueError("no tissue thicker than the erosion radius; supply a brain mask")
     sizes = np.bincount(lab.ravel()) * float(np.prod(vox)) / 1000.0
     sizes[0] = 0
-    keep = np.flatnonzero(sizes >= min_core_ml)
-    if keep.size == 0:
-        keep = np.array([sizes.argmax()])
+    largest = int(sizes.argmax())
+    # Keep a second large piece only if it sits level with the largest one along the
+    # superior-inferior axis: a hemisphere split off by a deep fissure does, neck and face
+    # tissue below the skull base does not.
+    si = _si_axis(affine) if affine is not None else 2
+    lo, hi = _extent(lab == largest, si)
+    keep = [largest]
+    for k in np.flatnonzero(sizes >= min_core_ml):
+        if k == largest:
+            continue
+        c = ndi.center_of_mass(lab == k)[si]
+        if lo <= c <= hi:
+            keep.append(int(k))
     core = np.isin(lab, keep)
     brain = tissue & (ndi.distance_transform_edt(~core, sampling=vox) <= erode_mm)
     brain = ndi.binary_fill_holes(brain)
@@ -90,7 +111,8 @@ def estimate_brain(t1: np.ndarray, zooms: tuple, erode_mm: float = 8.0,
 
 
 def brain_and_wm(t1: np.ndarray, zooms: tuple, flair: np.ndarray | None = None,
-                 mask: np.ndarray | None = None, depth_mm: float = 6.0) -> tuple[np.ndarray, np.ndarray]:
+                 mask: np.ndarray | None = None, depth_mm: float = 6.0,
+                 affine: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
     """Brain mask (estimated, or the one given) and a white-matter placement estimate.
 
     White matter is bright T1w tissue deeper than ``depth_mm`` inside the
@@ -100,7 +122,7 @@ def brain_and_wm(t1: np.ndarray, zooms: tuple, flair: np.ndarray | None = None,
     segmentation.
     """
     vox = np.array(zooms[:3], dtype=float)
-    brain = mask.astype(bool) if mask is not None else estimate_brain(t1, zooms)
+    brain = mask.astype(bool) if mask is not None else estimate_brain(t1, zooms, affine=affine)
     sm = ndi.gaussian_filter(t1, sigma=1.0 / vox)
     deep = ndi.distance_transform_edt(brain, sampling=vox) > depth_mm
     wm_thr = np.percentile(sm[brain], 65)  # T1w: white matter is the bright part of the brain
@@ -208,7 +230,7 @@ def inject(t1_path: Path, flair_path: Path | None, out_t1: Path, out_flair: Path
         if m_img.shape != t1_img.shape:
             raise ValueError(f"brain mask grid {m_img.shape} differs from T1w {t1_img.shape}")
         mask = np.asarray(m_img.dataobj) > 0
-    brain, wm = brain_and_wm(t1, zooms, fl, mask)
+    brain, wm = brain_and_wm(t1, zooms, fl, mask, affine=t1_img.affine)
     depth = ndi.distance_transform_edt(brain, sampling=zooms[:3])
     lesions = place_lesions(wm, depth, zooms, spec, rng)
     field_, labels = render(t1.shape, zooms, lesions, spec.edge_mm)
