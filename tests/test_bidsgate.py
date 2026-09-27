@@ -278,3 +278,32 @@ def test_truth_records_height_and_scoring_reports_by_height_and_region(tmp_path)
     assert s["by_height"]["lower"]["sensitivity"] < 1.0
     assert set(s["by_region"]) <= {"below", "above"} and sum(v["n"] for v in s["by_region"].values()) == 9
     assert s["by_region"]["below"]["sensitivity"] < 1.0 and s["by_region"].get("above", {"sensitivity": 1.0})["sensitivity"] == 1.0
+
+
+def test_regional_atrophy_shrinks_the_region_and_leaves_far_tissue_alone(tmp_path):
+    root = phantom(tmp_path)
+    out = tmp_path / "out"
+    out.mkdir()
+    t1_img = nib.load(root / "sub-01/anat/sub-01_T1w.nii.gz")
+    t1 = np.asarray(t1_img.dataobj)
+    c = np.array(t1.shape) // 2
+    reg = np.zeros(t1.shape, np.int16)
+    reg[c[0] - 20:c[0] + 20, c[1] + 2:c[1] + 42, c[2] - 20:c[2] + 20] = 3  # a 60 mm block inside the white-matter core, off-centre
+    nib.save(nib.Nifti1Image(reg, t1_img.affine), out / "regions.nii.gz")
+    t = inject_atrophy(root / "sub-01/anat/sub-01_T1w.nii.gz", None, out / "T1w.nii.gz", None, out / "truth.json",
+                       AtrophySpec(volume_factor=0.85, region_label=3), None, out / "regions.nii.gz")
+    assert t["target"] == "region label 3"
+    measured = t["target_volume_mm3_after_measured"] / t["target_volume_mm3_before"]
+    assert abs(measured - 0.85) < 0.03
+    # the brain as a whole barely changes, and tissue farther than the falloff from the region is untouched
+    assert t["brain_volume_mm3_after_measured"] / t["brain_volume_mm3_before"] > 0.97
+    warped = np.asarray(nib.load(out / "T1w.nii.gz").dataobj)
+    far = np.zeros(t1.shape, bool)
+    far[c[0] - 36:c[0] - 28, c[1] - 44:c[1] - 34, c[2] - 8:c[2] + 8] = True  # >40 mm from the block, inside the brain
+    assert np.abs(warped[far] - t1[far]).max() < 1e-3
+    s = score_atrophy(out / "truth.json", 1000.0, 850.0)
+    assert s["target"] == "region label 3" and abs(s["recovery"] - 1.0) < 1e-9
+    # the wrong label is refused, and an absent region file too
+    with pytest.raises(ValueError):
+        inject_atrophy(root / "sub-01/anat/sub-01_T1w.nii.gz", None, out / "T1w2.nii.gz", None, out / "truth2.json",
+                       AtrophySpec(volume_factor=0.9, region_label=7), None, out / "regions.nii.gz")

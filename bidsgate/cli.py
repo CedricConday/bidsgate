@@ -73,15 +73,19 @@ def cmd_inject_atrophy(a) -> int:
         out_fl = derivative_path(out, anat, "FLAIR") if flair else None
         truth = derivative_path(out, anat, "truth", desc="atrophy", ext=".json")
         try:
-            t = inject_atrophy(anat.path, flair, out_t1, out_fl, truth, AtrophySpec(volume_factor=a.factor, falloff_mm=a.falloff),
-                               _mask_for(a.mask, anat))
+            region = Path(a.region.format(base=anat.base, subject=anat.subject)) if a.region else None
+            if region is not None and not region.exists():
+                raise SystemExit(f"{anat.base}: region image not found at {region}")
+            t = inject_atrophy(anat.path, flair, out_t1, out_fl, truth,
+                               AtrophySpec(volume_factor=a.factor, falloff_mm=a.falloff, region_label=a.label),
+                               _mask_for(a.mask, anat), region)
         except ValueError as e:
             print(f"{anat.base}: skipped: {e}", file=sys.stderr)
             continue
         copy_json_sidecar(anat.path, out_t1, {"BidsgateInjection": "atrophy", "BidsgateVolumeFactor": a.factor, "BidsgateTruth": truth.name})
         if flair and out_fl:
             copy_json_sidecar(flair, out_fl, {"BidsgateInjection": "atrophy", "BidsgateVolumeFactor": a.factor})
-        print(f"{anat.base}: brain {t['brain_volume_mm3_before']/1000:.0f} ml -> factor {a.factor} (measured on the mask: {t['brain_volume_mm3_after_measured']/t['brain_volume_mm3_before']:.3f})")
+        print(f"{anat.base}: {t['target']} {t['target_volume_mm3_before']/1000:.1f} ml -> factor {a.factor} (measured on the mask: {t['target_volume_mm3_after_measured']/t['target_volume_mm3_before']:.3f})")
     print(f"derivative dataset written to {out}; run your morphometry on {root} and on {out}, then `bidsgate score-atrophy`")
     return 0
 
@@ -167,7 +171,9 @@ def main(argv=None) -> int:
     p.add_argument("--subject", action="append")
     p.add_argument("--factor", type=float, default=0.95, help="brain volume factor, 0.95 = 5 %% loss")
     p.add_argument("--mask", help="brain-mask path pattern with {subject} or {base}; default is a morphological estimate from the T1w")
-    p.add_argument("--falloff", type=float, default=12.0, help="mm over which the deformation fades outside the brain")
+    p.add_argument("--falloff", type=float, default=12.0, help="mm over which the deformation fades outside the target")
+    p.add_argument("--region", help="label image on the T1w grid, pattern with {subject} or {base}; contract this region instead of the whole brain")
+    p.add_argument("--label", type=int, help="with --region: the one label to contract (default: every nonzero voxel)")
     p.set_defaults(func=cmd_inject_atrophy)
 
     p = sub.add_parser("score-lesions", help="score predicted lesion masks against the injected truth")

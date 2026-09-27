@@ -111,13 +111,17 @@ message and nothing is written for it. Every image gets its own seed (a hash of 
 mixed with `--seed`), so `--subject` selection and dataset growth do not change what a
 subject receives, and run or acquisition entities are kept in the derivative names.
 
-**Atrophy** (`inject-atrophy`): a smooth radial contraction of the brain by a known volume
-factor (default 0.95, five percent loss) about its centroid, fading to identity over 12 mm
-outside the brain mask. The same mask estimate and `--mask` option apply. The truth JSON
-records the factor and the brain volume before and after as measured on the mask itself.
-Note that the skull contracts with the brain inside the falloff zone, so a tool that
-normalises to intracranial volume will see less change than was injected; compare raw
-volumes.
+**Atrophy** (`inject-atrophy`): a smooth radial contraction by a known volume factor
+(default 0.95, five percent loss) about the target's centroid, fading to identity over
+12 mm outside it. The target is the whole brain (estimated, or `--mask`) or one region:
+`--region "{subject}_dseg.nii.gz" --label 17` contracts that label of any segmentation on
+the T1w grid, so a tool's hippocampal or thalamic volume can be checked the same way as
+its brain volume. The truth JSON records the target's volume before and after as measured
+on its own mask, plus the whole brain's. Two limits worth knowing: tissue within the
+falloff distance of a region moves too, so a neighbouring structure is not a clean
+reference; and the mask-measured factor is grid-quantised for small regions (a region 20
+voxels across cannot show a 5 % change on a binary mask), while the image itself carries
+the exact factor.
 
 Both write a BIDS derivative dataset: `dataset_description.json`, the modified images with
 their sidecars carrying what was done, and the truth files next to them.
@@ -147,8 +151,8 @@ Both write JSON and a single-file HTML scorecard.
   per-region breakdown (and a `--region` mask) is the next scoring feature.
 * On real subjects, extra predicted components may be genuine findings. The gate
   reports them; it cannot judge them.
-* Atrophy is global and radial. Regional atrophy needs a region mask; that is the next
-  injector.
+* Atrophy is a radial contraction about a centroid, global or per region. It is a volume
+  change, not a model of how tissue actually thins.
 * Activation injection for fMRI is not built yet.
 
 ## Development

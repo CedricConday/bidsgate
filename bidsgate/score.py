@@ -116,6 +116,7 @@ def score_atrophy(truth_json: Path, volume_before_mm3: float, volume_after_mm3: 
     injected_change = (injected - 1) * 100
     measured_change = (measured - 1) * 100
     return {
+        "target": truth.get("target", "brain"),
         "injected_factor": injected,
         "measured_factor": measured,
         "injected_change_pct": injected_change,
