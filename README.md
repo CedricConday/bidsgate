@@ -1,5 +1,7 @@
 # bidsgate
 
+[![tests](https://github.com/CedricConday/bidsgate/actions/workflows/tests.yml/badge.svg)](https://github.com/CedricConday/bidsgate/actions/workflows/tests.yml)
+
 **A recovery gate for neuroimaging pipelines.** Inject a known truth into real BIDS data,
 run any BIDS app on the result, and score what it recovered. Every pipeline claims to
 segment lesions or measure atrophy; this is the test that says by how much.
