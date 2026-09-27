@@ -28,23 +28,28 @@ This generalises the synthetic backtest of [lesiontrack](https://github.com/Cedr
 where injecting known lesion expansions showed a published method recovering a third of
 the injected change and firing on noise. The same discipline applies to any pipeline.
 
-## First results: LST-AI v2 on healthy controls
+## First results: LST-AI v2 on six healthy controls
 
 [LST-AI](https://github.com/CompImg/LST-AI) v2.0.0rc1 (CPU image, fast mode) was run on
-OpenNeuro [ds007908](https://openneuro.org/datasets/ds007908) controls after twelve
-lesions (30 to 1500 mm3) were injected into each T1w and FLAIR. Scorecard and JSON are in
-`results/lst-ai-v2/`; the remaining controls are being added as they finish.
+the six OpenNeuro [ds007908](https://openneuro.org/datasets/ds007908) controls that passed
+the input checks, after twelve lesions (30 to 1500 mm3) were injected into each T1w and
+FLAIR. Scorecard, JSON and per-lesion tables are in `results/lst-ai-v2/`.
 
 | Subject | Detected | Dice | Volume ratio | Sensitivity 0-100 / 100-500 / 500+ mm3 | Extra components beyond 2 mm |
 |---|---|---|---|---|---|
 | sub-9000 | 9 of 12 | 0.75 | 1.15 | 0.83 / 0.50 / 0.75 | 16 (733 mm3) |
 | sub-9001 | 11 of 12 | 0.80 | 1.34 | 0.83 / 1.00 / 1.00 | 32 (851 mm3) |
+| sub-9002 | 9 of 12 | 0.81 | 0.96 | 0.83 / 0.50 / 0.75 | 3 (54 mm3) |
+| sub-9003 | 12 of 12 | 0.83 | 1.03 | 1.00 / 1.00 / 1.00 | 6 (69 mm3) |
+| sub-9004 | 12 of 12 | 0.85 | 1.24 | 1.00 / 1.00 / 1.00 | 16 (see JSON) |
+| sub-9008 | 11 of 12 | 0.87 | 1.06 | 0.83 / 1.00 / 1.00 | 2 (see JSON) |
+| **All** | **64 of 72** | **0.82 mean** | | **32/36, 10/12, 22/24** | |
 
-What the per-lesion tables show: every lesion in the cerebral white matter was found,
-down to 26 mm3, with overlap fractions of 0.76 to 1.0. All four misses across the two
-subjects are the lesions the placement put lowest in the brain: in sub-9000 the three at
-cerebellum and brainstem level (29, 194 and 611 mm3), in sub-9001 the one lesion below
-the brain's centre (28 mm3). Whether that is a weakness of the model or a weakness of
+What the per-lesion tables show: the misses are not about size. Lesions of 26 to 30 mm3
+were found in every subject, and the eight misses span 28 to 611 mm3. Seven of the eight
+are among the four lowest-placed lesions of their subject, at cerebellum and brainstem
+level, where these controls' own FLAIR is brightest; the one exception is a 75 mm3 lesion
+at mid-height in sub-9002. Whether that is a weakness of the model or a weakness of
 injecting supratentorial-looking lesions into infratentorial tissue is exactly the
 question the gate raises and a per-region breakdown would answer; it is on the list
 below.
@@ -52,11 +57,20 @@ below.
 The extra components on a healthy control are not necessarily wrong: a control can carry
 real incidental white-matter hyperintensities, and the gate cannot tell those from false
 positives. It can only say how much the pipeline reported beyond what was injected.
+Here it ranged from 2 components to 32 across the six subjects.
 
 Two of the eight controls were refused by the input checks: sub-9005's FLAIR is on a
 different grid from its T1w, and sub-9006's FLAIR shares the grid but not the affine
 (17 mm apart), so it was never co-registered. A shape-only check had accepted it. The
 gate refusing an input is a result too.
+
+One caveat on the placement mask, found while writing this: re-running the brain
+estimate on the *injected* T1w of four subjects gives a different volume from the
+original (up to 2.1 l against 1.4 l for sub-9003), so the estimate is sensitive to small
+intensity changes. The lesions were placed with the estimate from the original image,
+which passed the volume gate for all six, and the mask volumes are recorded in each
+truth JSON. Tracked as an issue; supply `--mask` from a real brain extraction if you need
+placement to be exactly reproducible across preprocessing variants.
 
 ## Injections
 
