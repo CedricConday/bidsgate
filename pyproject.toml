@@ -21,7 +21,7 @@ dependencies = ["numpy>=1.24", "scipy>=1.10", "nibabel>=5", "pandas>=2"]
 
 [project.optional-dependencies]
 phantom = ["lesiontrack>=0.2.0"]
-dev = ["pytest", "ruff"]
+dev = ["pytest", "ruff", "lesiontrack>=0.2.0"]
 
 [project.urls]
 Homepage = "https://github.com/CedricConday/bidsgate"
