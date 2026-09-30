@@ -1,0 +1,4 @@
+a	b	lesions_a	lesions_b	dice	invented_new	invented_new_mm3	invented_resolved	invented_resolved_mm3	volume_change_pct
+0	1	26	25	0.94515579897861	0	0.0	0	0.0	0.22228808535862477
+0	2	26	24	0.9480500037427951	0	0.0	1	24.0	-2.030231179608773
+1	2	25	24	0.955510692388216	0	0.0	1	12.0	-2.2475232884814433

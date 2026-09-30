@@ -149,7 +149,15 @@ def cmd_score_atrophy(a) -> int:
     return 0
 
 
+SUBTOOLS = ("rescanphantom", "segcard", "longphantom")
+
+
 def main(argv=None) -> int:
+    import importlib
+
+    args = list(sys.argv[1:] if argv is None else argv)
+    if args and args[0] in SUBTOOLS:
+        return importlib.import_module(f"bidsgate.{args[0]}.cli").main(args[1:]) or 0
     ap = argparse.ArgumentParser(prog="bidsgate", description=__doc__)
     ap.add_argument("--version", action="version", version=f"bidsgate {__version__}")
     sub = ap.add_subparsers(dest="cmd", required=True)

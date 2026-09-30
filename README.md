@@ -7,7 +7,7 @@ run any BIDS app on the result, and score what it recovered. Every pipeline clai
 segment lesions or measure atrophy; this is the test that says by how much.
 
 ```bash
-pip install bidsgate
+pip install bidsgate            # bidsgate[phantom] for longphantom
 bidsgate inject-lesions /data/bids --out /data/derivatives/bidsgate-lesions
 # run your lesion segmenter on /data/derivatives/bidsgate-lesions
 bidsgate score-lesions --truth /data/derivatives/bidsgate-lesions \
@@ -176,3 +176,109 @@ mismatched FLAIR leaves no partial output; and that the CLI runs end to end.
 Docker container per subject; `overnight_demo.sh` for the whole cohort).
 
 MIT. Written by Cedric Conday with Claude (Anthropic) as coding partner.
+
+## Also in bidsgate 0.3.0
+
+Three benchmarking tools that used to be separate packages now live here, because they answer the same question
+from other sides: how good is a segmenter or tracker on data where the truth is known.
+
+| Command | What it does |
+|---|---|
+| `bidsgate rescanphantom` | scan-rescan test for any segmenter without a second scan |
+| `bidsgate segcard` | one-page benchmark card for a segmenter from bidsgate, rescan and expert-agreement evidence |
+| `bidsgate longphantom` | known-truth multi-visit series from one real baseline, and its scorer (needs `pip install bidsgate[phantom]`) |
+
+## rescanphantom
+
+*formerly rescanphantom*
+
+How many new lesions does your segmenter invent between two scans of an unchanged brain? rescanphantom
+answers without a second scan. It writes pseudo-rescans of one scan (independent bias field, gain and noise,
+same anatomy, same grid), runs any segmenter on each through a command template, and counts the lesions that
+appear or disappear between copies. That count is the floor under every "new lesion" the segmenter reports on
+real follow-ups.
+
+```bash
+pip install bidsgate
+bidsgate rescanphantom T1w.nii.gz FLAIR.nii.gz --cmd 'my_segmenter {t1} {flair} {out}' --out work --k 3
+```
+
+### LST-AI v2 on MSLesSeg P1 (`results/rescanphantom/results/`)
+
+Three pseudo-rescans of P1's baseline, LST-AI v2.0.0rc1 (CPU, fast mode, `scripts/lstai.sh`):
+
+| Between rescans | Mean |
+|---|---:|
+| Dice | 0.95 |
+| invented new lesions (10 mm³ or more) per pair | 0 |
+| lesions lost per pair | 0.7 |
+| lesion volume change | 1.5 % |
+
+LST-AI invented no new lesion between rescans of this scan and lost about one small lesion per two pairs.
+Volume moved by 1.5 % with nothing changed, which is the noise floor for any lesion-volume change reported
+with it on similar data. One patient, three copies: a first measurement, not a validation.
+
+## segcard
+
+*formerly segcard*
+
+A one-page **benchmark card for an MS lesion segmenter**, pooled from open measurements rather than
+self-reported numbers:
+
+* sensitivity to injected lesions by size and by brain level, plus false positives
+  ([bidsgate](https://github.com/CedricConday/bidsgate));
+* new and lost lesions invented between pseudo-rescans of the same scan
+  ([rescanphantom](https://github.com/CedricConday/bidsgate#rescanphantom));
+* Dice against expert masks, when you have them.
+
+Evidence that is missing is listed as missing, not left out.
+
+```bash
+pip install bidsgate
+bidsgate segcard "LST-AI v2" --bidsgate scores_lesions.json --rescan P1.json P2.json --reference dice.tsv --out results/segcard/cards/lst-ai
+```
+
+First card: `results/segcard/cards/lst-ai-v2.html`. LST-AI v2.0.0rc1 found 64 of 72 injected lesions on six OpenNeuro
+controls, with 12.5 false-positive components per scan. Between three pseudo-rescans of MSLesSeg P1 it
+invented no new lesion, lost 0.7 per pair and kept Dice 0.95. Against MSLesSeg expert masks on three
+baselines its Dice is 0.51, 0.73 and 0.15; the last patient is the case every summary Dice hides. Research software. MIT.
+
+## longphantom
+
+*formerly longphantom*
+
+There is no public longitudinal MS MRI dataset where the truth is known: annotators draw each visit, and
+the drawings drift ([gtdrift](https://github.com/CedricConday/msdataqc#gtdrift) finds half the lesion sites of
+MSLesSeg's multi-visit ground truth flickering or vanishing). longphantom builds the missing ground truth
+from one real baseline scan: a series of visits in which chosen lesions enlarge, shrink or resolve, new
+lesions appear, the brain atrophies, and every visit is repositioned, rescaled and noised like a rescan.
+The truth table is measured on each visit's warped label map, so it cannot disagree with the images.
+
+```bash
+pip install bidsgate
+bidsgate longphantom T1w.nii.gz FLAIR.nii.gz lesions.nii.gz brainmask.nii.gz --out P1phantom --times 0 0.5 1 2
+bidsgate longphantom score P1phantom path/to/lesiontrack/output      # confusion table: truth fate against the call
+```
+
+### First benchmark: lesiontrack on a phantom from MSLesSeg P1 (`results/longphantom/results/`, corrected 2026-09-30)
+
+Four visits over two years: 4 lesions designed to enlarge (volume x1.3 per year), 3 to shrink (x0.75), 3 to
+resolve, 6 new, whole-brain atrophy 1 % per year. Lesions inside another lesion's deformation shell are not used
+as stable controls, and every visit, the first included, is resampled through a rigid repositioning, so label
+resampling bias is equal at every visit (both after an independent review of the first version).
+[lesiontrack](https://github.com/CedricConday/lesiontrack) (via [mscard](https://github.com/CedricConday/mscard)),
+first visit against last, judged against what each lesion's truth volume did (lesiontrack's own ±9 %/yr bands):
+
+| Truth (measured on the phantom) | Called correctly |
+|---|---:|
+| new | 6 of 6 |
+| resolved | 3 of 3 |
+| shrinking | 3 of 3 |
+| enlarging | 3 of 3 |
+| stable | 9 of 9 (1 as trend up, inside the stable band) |
+
+24 of 24 lesion fates right, no false lesion, no lesion missed. One 19 mm³ piece that resampling split off a
+shrinking lesion was tracked as its own group; the score lists such fragments separately instead of scoring them.
+One lesion designed to enlarge is a 15.6 ml confluent lesion that a local radial field barely grows, so its
+measured truth is stable, and lesiontrack called it stable. This is one phantom from one patient, not a
+validation; its purpose is that the benchmark exists and any tracker can be run through it.

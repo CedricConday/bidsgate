@@ -1,0 +1,13 @@
+called     enlarging  new  resolved  shrinking  stable  trend_up
+truth                                                           
+enlarging          3    0         0          0       0         0
+new                0    6         0          0       0         0
+resolving          0    0         3          0       0         0
+shrinking          0    0         0          3       0         0
+stable             0    0         0          0       8         1
+
+lesions scored 24, correct 24, fragments 1, false 0, missed 0
+   group    called  truth_lesion  group_volume_mm3
+1      2  trend_up             1                19
+Limiting the number of threads to 2
+Limiting the number of threads to 2

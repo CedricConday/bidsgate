@@ -1,0 +1,55 @@
+{
+  "segmenter": "LST-AI v2.0.0rc1 (CPU, fast mode)",
+  "evidence": {
+    "injection": {
+      "pipeline": "LST-AI v2.0.0rc1 (CPU, fast mode)",
+      "scans": 6,
+      "injected": 72,
+      "detected": 64,
+      "sensitivity": 0.8888888888888888,
+      "dice_injected_mean": 0.8198015229278045,
+      "fp_components_per_scan": 12.5,
+      "by_size": {
+        "0-100mm3": {
+          "n": 36,
+          "sensitivity": 0.8888888888888888
+        },
+        "100-500mm3": {
+          "n": 12,
+          "sensitivity": 0.8333333333333334
+        },
+        "500-infmm3": {
+          "n": 24,
+          "sensitivity": 0.9166666666666666
+        }
+      },
+      "by_height": {
+        "lower": {
+          "n": 12,
+          "sensitivity": 0.5
+        },
+        "middle": {
+          "n": 36,
+          "sensitivity": 0.9444444444444444
+        },
+        "upper": {
+          "n": 24,
+          "sensitivity": 1.0
+        }
+      }
+    },
+    "rescan": {
+      "scans": 1,
+      "pairs": 3,
+      "invented_new_per_pair": 0.0,
+      "invented_resolved_per_pair": 0.6666666666666666,
+      "mean_dice": 0.9495721650365404
+    },
+    "reference": {
+      "scans": 3,
+      "dice_mean": 0.46543333333333337,
+      "dice_median": 0.512
+    }
+  },
+  "missing": []
+}

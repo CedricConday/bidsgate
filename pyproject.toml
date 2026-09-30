@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bidsgate"
-version = "0.2.0"
+version = "0.3.0"
 description = "Recovery gate for neuroimaging pipelines: inject known lesions or atrophy into real BIDS data, run any BIDS app, score what it recovered."
 readme = "README.md"
 license = {text = "MIT"}
@@ -20,6 +20,7 @@ classifiers = [
 dependencies = ["numpy>=1.24", "scipy>=1.10", "nibabel>=5", "pandas>=2"]
 
 [project.optional-dependencies]
+phantom = ["lesiontrack>=0.2.0"]
 dev = ["pytest", "ruff"]
 
 [project.urls]

@@ -1,0 +1,8 @@
+{
+  "copies": 3,
+  "pairs": 3,
+  "mean_dice": 0.9495721650365404,
+  "invented_new_per_pair": 0.0,
+  "invented_resolved_per_pair": 0.6666666666666666,
+  "abs_volume_change_pct_mean": 1.500014184482947
+}
