@@ -77,7 +77,7 @@ def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold
                "height_frac": les.get("height_frac"), "height": _height_bin(les.get("height_frac")),
                "depth_mm": les.get("depth_mm")}
         if reg is not None:
-            c = tuple(int(round(v)) for v in les["centre_vox"])
+            c = tuple(int(np.rint(v)) for v in les["centre_vox"])
             label = int(reg[c])
             row["region"] = (region_names or {}).get(label, str(label))
         rows.append(row)

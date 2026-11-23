@@ -255,7 +255,7 @@ def inject(t1_path: Path, flair_path: Path | None, out_t1: Path, out_flair: Path
         c = les["centre_vox"]
         frac = (c[si] - lo) / max(hi - lo, 1.0)
         les["height_frac"] = float(frac if up > 0 else 1.0 - frac)  # 0 = bottom of the brain mask, 1 = top
-        les["depth_mm"] = float(depth[tuple(int(round(v)) for v in c)])
+        les["depth_mm"] = float(depth[tuple(int(np.rint(v)) for v in c)])
     truth = {
         "kind": "lesions", "seed": spec.seed, "n": len(lesions), "edge_mm": spec.edge_mm,
         "edge": "field is 0.5 on the ellipsoid surface, erf falloff over edge_mm; label = inside the surface",

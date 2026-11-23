@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -12,7 +13,7 @@ def _pct(x) -> str:
         v = float(x)
     except (TypeError, ValueError):
         return "-"
-    return "-" if v != v else f"{100 * v:.0f}%"
+    return "-" if math.isnan(v) else f"{100 * v:.0f}%"
 
 
 def _f(x, d=2) -> str:
@@ -20,7 +21,7 @@ def _f(x, d=2) -> str:
         v = float(x)
     except (TypeError, ValueError):
         return "-"
-    return "-" if v != v else f"{v:.{d}f}"
+    return "-" if math.isnan(v) else f"{v:.{d}f}"
 
 
 def scorecard_lesions(results: list[dict], pipeline: str, out: Path) -> Path:
