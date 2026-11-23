@@ -107,21 +107,75 @@ def score_lesions(truth_json: Path, truth_mask: Path, pred_mask: Path, threshold
     }
 
 
-def score_atrophy(truth_json: Path, volume_before_mm3: float, volume_after_mm3: float) -> dict:
-    """Compare a tool's reported volumes before and after injection with the injected factor."""
+def score_atrophy(truth_json: Path, volume_before_mm3: float, volume_after_mm3: float,
+                  reference_before_mm3: float | None = None, reference_after_mm3: float | None = None) -> dict:
+    """Compare a tool's reported volumes before and after injection with the injected factor.
+
+    ``reference_*`` are the same tool's volumes for a structure the injection did not touch
+    (farther than the falloff from the target), measured in the same two runs. Its change is
+    what the tool reports when nothing changed: the noise a real change has to exceed.
+    """
     with open(truth_json) as fh:
         truth = json.load(fh)
     injected = truth["volume_factor"]
     measured = volume_after_mm3 / volume_before_mm3 if volume_before_mm3 else float("nan")
     injected_change = (injected - 1) * 100
     measured_change = (measured - 1) * 100
-    return {
+    before_mask = truth.get("target_volume_mm3_before")
+    after_mask = truth.get("target_volume_mm3_after_measured")
+    out = {
         "target": truth.get("target", "brain"),
         "injected_factor": injected,
         "measured_factor": measured,
         "injected_change_pct": injected_change,
         "measured_change_pct": measured_change,
         "recovery": measured_change / injected_change if injected_change else float("nan"),
+        "bias_pp": measured_change - injected_change,
         "volume_before_mm3": volume_before_mm3,
         "volume_after_mm3": volume_after_mm3,
+        "truth_mask_change_pct": ((after_mask / before_mask - 1) * 100) if before_mask and after_mask is not None else None,
     }
+    if reference_before_mm3 is not None and reference_after_mm3 is not None:
+        out["reference_change_pct"] = ((reference_after_mm3 / reference_before_mm3 - 1) * 100
+                                       if reference_before_mm3 else float("nan"))
+    return out
+
+
+def summarise_atrophy(scores: list[dict], k: float = 2.0) -> dict:
+    """Pool score_atrophy results over subjects and injected levels.
+
+    Per level: n, mean measured change, recovery (mean and SD), bias in percentage points
+    (mean and SD; the SD is the noise), and how many subjects measured a change of the
+    injected sign larger than the noise floor. The noise floor is ``k`` times the RMS of
+    every reference-structure change in ``scores`` (expected zero); without reference
+    volumes it is undefined and no level is called separated. ``smallest_separated_pct``
+    is the smallest injected change at which every subject, at that level and every larger
+    one, cleared the floor.
+    """
+    ref = np.array([s["reference_change_pct"] for s in scores if s.get("reference_change_pct") is not None], float)
+    ref = ref[np.isfinite(ref)]
+    floor = float(k * np.sqrt(np.mean(ref ** 2))) if ref.size else None
+    levels = []
+    for inj in sorted({round(s["injected_change_pct"], 6) for s in scores}, key=abs):
+        grp = [s for s in scores if round(s["injected_change_pct"], 6) == inj]
+        meas = np.array([s["measured_change_pct"] for s in grp], float)
+        rec = np.array([s["recovery"] for s in grp], float)
+        bias = meas - inj
+        sd = (lambda x: float(np.std(x, ddof=1)) if x.size > 1 else float("nan"))
+        row = {"injected_change_pct": inj, "n": len(grp),
+               "measured_change_pct_mean": float(meas.mean()), "measured_change_pct_sd": sd(meas),
+               "recovery_mean": float(rec.mean()), "recovery_sd": sd(rec),
+               "bias_pp_mean": float(bias.mean()), "bias_pp_sd": sd(bias)}
+        if floor is not None and inj != 0:
+            hit = (np.sign(meas) == np.sign(inj)) & (np.abs(meas) > floor)
+            row["n_beyond_floor"] = int(hit.sum())
+            row["separated"] = bool(hit.all())
+        levels.append(row)
+    smallest = None
+    for row in reversed(levels):  # largest change first; stop at the first level that fails
+        if not row.get("separated"):
+            break
+        smallest = abs(row["injected_change_pct"])
+    return {"noise_floor_pct": floor, "k": k, "n_reference": int(ref.size),
+            "reference_change_pct_rms": float(np.sqrt(np.mean(ref ** 2))) if ref.size else None,
+            "levels": levels, "smallest_separated_pct": smallest}

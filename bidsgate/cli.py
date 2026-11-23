@@ -17,7 +17,7 @@ from .inject_atrophy import inject as inject_atrophy
 from .inject_lesions import LesionSpec
 from .inject_lesions import inject as inject_lesions
 from .report import scorecard_atrophy, scorecard_lesions
-from .score import score_atrophy, score_lesions
+from .score import score_atrophy, score_lesions, summarise_atrophy
 
 
 def subject_seed(base: str, seed: int) -> int:
@@ -136,7 +136,10 @@ def cmd_score_atrophy(a) -> int:
             continue
         if len(hits) > 1:
             raise SystemExit(f"{base}: {len(hits)} truth files match: " + ", ".join(str(h) for h in hits))
-        s = score_atrophy(hits[0], float(row["volume_before_mm3"]), float(row["volume_after_mm3"]))
+        has_ref = "reference_before_mm3" in vols.columns and "reference_after_mm3" in vols.columns
+        s = score_atrophy(hits[0], float(row["volume_before_mm3"]), float(row["volume_after_mm3"]),
+                          float(row["reference_before_mm3"]) if has_ref else None,
+                          float(row["reference_after_mm3"]) if has_ref else None)
         results.append({"subject": base, "score": s})
         print(f"{base}: injected {s['injected_change_pct']:+.1f}%  measured {s['measured_change_pct']:+.1f}%  recovery {s['recovery']:.2f}")
     if not results:
@@ -146,6 +149,33 @@ def cmd_score_atrophy(a) -> int:
     with open(out / "scores_atrophy.json", "w") as fh:
         json.dump({"pipeline": a.pipeline, "results": results}, fh, indent=2)
     print(f"scorecard: {scorecard_atrophy(results, a.pipeline, out / 'scorecard_atrophy.html')}")
+    return 0
+
+
+def cmd_summarise_atrophy(a) -> int:
+    """Pool several score-atrophy outputs (one per injected level) into one level table."""
+    scores, pipelines = [], set()
+    for path in a.scores:
+        with open(path) as fh:
+            data = json.load(fh)
+        pipelines.add(data.get("pipeline"))
+        scores += [dict(r["score"], subject=r["subject"]) for r in data["results"]]
+    if not scores:
+        raise SystemExit("nothing to summarise")
+    summ = summarise_atrophy(scores, k=a.k)
+    summ["pipeline"] = a.pipeline or ", ".join(sorted(p for p in pipelines if p))
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    with open(out / "summary_atrophy.json", "w") as fh:
+        json.dump(summ, fh, indent=2)
+    pd.DataFrame(summ["levels"]).to_csv(out / "summary_atrophy.tsv", sep="\t", index=False, float_format="%.4f")
+    pd.DataFrame(scores).to_csv(out / "scores_atrophy_all.tsv", sep="\t", index=False, float_format="%.4f")
+    floor = summ["noise_floor_pct"]
+    print("noise floor: " + (f"{floor:.2f} %" if floor is not None else "undefined (no reference volumes)"))
+    for r in summ["levels"]:
+        print(f"injected {r['injected_change_pct']:+.1f}%: n={r['n']} measured {r['measured_change_pct_mean']:+.2f}% "
+              f"recovery {r['recovery_mean']:.2f} bias {r['bias_pp_mean']:+.2f} pp (SD {r['bias_pp_sd']:.2f})")
+    print(f"smallest change separated from zero in every subject: {summ['smallest_separated_pct']}")
     return 0
 
 
@@ -197,10 +227,18 @@ def main(argv=None) -> int:
 
     p = sub.add_parser("score-atrophy", help="score a tool's reported volumes against the injected change")
     p.add_argument("--truth", required=True)
-    p.add_argument("--volumes", required=True, help="TSV: subject, volume_before_mm3, volume_after_mm3")
+    p.add_argument("--volumes", required=True, help="TSV: subject, volume_before_mm3, volume_after_mm3; optional "
+                   "reference_before_mm3, reference_after_mm3 for an untouched structure (the noise reference)")
     p.add_argument("--pipeline", required=True)
     p.add_argument("--out", default="bidsgate-scores")
     p.set_defaults(func=cmd_score_atrophy)
+
+    p = sub.add_parser("summarise-atrophy", help="pool score-atrophy outputs over injected levels: recovery, bias, noise, smallest separated change")
+    p.add_argument("scores", nargs="+", help="scores_atrophy.json files, one per injected level")
+    p.add_argument("--k", type=float, default=2.0, help="noise floor = k x RMS of the reference-structure changes")
+    p.add_argument("--pipeline", help="name for the summary (default: the pipelines named in the inputs)")
+    p.add_argument("--out", default="bidsgate-scores")
+    p.set_defaults(func=cmd_summarise_atrophy)
 
     a = ap.parse_args(argv)
     return a.func(a)

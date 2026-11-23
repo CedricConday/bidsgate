@@ -307,3 +307,57 @@ def test_regional_atrophy_shrinks_the_region_and_leaves_far_tissue_alone(tmp_pat
     with pytest.raises(ValueError):
         inject_atrophy(root / "sub-01/anat/sub-01_T1w.nii.gz", None, out / "T1w2.nii.gz", None, out / "truth2.json",
                        AtrophySpec(volume_factor=0.9, region_label=7), None, out / "regions.nii.gz")
+
+
+def test_summarise_atrophy_levels_with_a_known_answer(tmp_path):
+    # three levels, two subjects; the tool recovers 80 % of every change, plus +-0.1 pp per subject,
+    # and its untouched reference structure moves by +-0.5 %: RMS 0.5, floor 1.0 at k=2.
+    from bidsgate.score import summarise_atrophy
+
+    scores = []
+    for factor in (0.98, 0.95, 0.90):
+        truth = tmp_path / f"truth_{factor}.json"
+        truth.write_text(json.dumps({"volume_factor": factor, "target": "region label 17"}))
+        for jitter, ref in ((0.1, 0.5), (-0.1, -0.5)):
+            measured = 1 + 0.8 * (factor - 1) + jitter / 100
+            scores.append(score_atrophy(truth, 1000.0, 1000.0 * measured, 2000.0, 2000.0 * (1 + ref / 100)))
+    assert abs(scores[0]["reference_change_pct"] - 0.5) < 1e-9
+    assert abs(scores[0]["bias_pp"] - (-1.6 + 0.1 + 2.0)) < 1e-9  # measured -1.5 % against injected -2 %
+    s = summarise_atrophy(scores)
+    assert abs(s["noise_floor_pct"] - 1.0) < 1e-9 and s["n_reference"] == 6
+    lv = {round(r["injected_change_pct"]): r for r in s["levels"]}
+    assert [round(r["injected_change_pct"]) for r in s["levels"]] == [-2, -5, -10]
+    assert abs(lv[-5]["measured_change_pct_mean"] - (-4.0)) < 1e-9
+    assert abs(lv[-5]["recovery_mean"] - 0.8) < 1e-9 and abs(lv[-5]["bias_pp_mean"] - 1.0) < 1e-9
+    assert abs(lv[-5]["bias_pp_sd"] - np.std([0.1, -0.1], ddof=1)) < 1e-9
+    # at -2 % the tool reports -1.5 and -1.7: both beyond the 1.0 floor, so every level separates
+    assert lv[-2]["n_beyond_floor"] == 2 and s["smallest_separated_pct"] == 2.0
+    # a noisier reference (floor 3.0) leaves -2 % unseparated; the smallest becomes 5 %
+    noisy = [dict(x, reference_change_pct=1.5 if x["reference_change_pct"] > 0 else -1.5) for x in scores]
+    s2 = summarise_atrophy(noisy)
+    assert abs(s2["noise_floor_pct"] - 3.0) < 1e-9
+    assert s2["levels"][0]["separated"] is False and s2["smallest_separated_pct"] == 5.0
+    # without reference volumes nothing is called separated
+    bare = [{k: v for k, v in x.items() if k != "reference_change_pct"} for x in scores]
+    s3 = summarise_atrophy(bare)
+    assert s3["noise_floor_pct"] is None and s3["smallest_separated_pct"] is None
+
+
+def test_score_and_summarise_atrophy_cli_with_reference_columns(tmp_path):
+    root = phantom(tmp_path)
+    outs = []
+    for factor, after in (("0.95", 960), ("0.9", 910)):
+        atro = tmp_path / f"atro{factor}"
+        assert main(["inject-atrophy", str(root), "--out", str(atro), "--factor", factor]) == 0
+        vols = tmp_path / f"vols{factor}.tsv"
+        vols.write_text("subject\tvolume_before_mm3\tvolume_after_mm3\treference_before_mm3\treference_after_mm3\n"
+                        f"sub-01\t1000\t{after}\t500\t501\n")
+        out = tmp_path / f"scores{factor}"
+        assert main(["score-atrophy", "--truth", str(atro), "--volumes", str(vols), "--pipeline", "mytool", "--out", str(out)]) == 0
+        outs.append(str(out / "scores_atrophy.json"))
+    assert main(["summarise-atrophy", *outs, "--out", str(tmp_path / "summary")]) == 0
+    with open(tmp_path / "summary" / "summary_atrophy.json") as fh:
+        s = json.load(fh)
+    assert s["pipeline"] == "mytool" and abs(s["noise_floor_pct"] - 0.4) < 1e-9
+    assert [r["n"] for r in s["levels"]] == [1, 1] and s["smallest_separated_pct"] == 5.0
+    assert (tmp_path / "summary" / "summary_atrophy.tsv").read_text().startswith("injected_change_pct")
