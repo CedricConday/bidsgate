@@ -1,0 +1,46 @@
+{
+  "noise_floor_pct": 0.12230762292628053,
+  "k": 2.0,
+  "n_reference": 18,
+  "reference_change_pct_rms": 0.061153811463140265,
+  "levels": [
+    {
+      "injected_change_pct": -2.0,
+      "n": 6,
+      "measured_change_pct_mean": -1.1919590708129757,
+      "measured_change_pct_sd": 0.39329824612247116,
+      "recovery_mean": 0.5959795354064873,
+      "recovery_sd": 0.19664912306123541,
+      "bias_pp_mean": 0.8080409291870243,
+      "bias_pp_sd": 0.39329824612247116,
+      "n_beyond_floor": 6,
+      "separated": true
+    },
+    {
+      "injected_change_pct": -5.0,
+      "n": 6,
+      "measured_change_pct_mean": -3.7182989677081744,
+      "measured_change_pct_sd": 0.572234671224971,
+      "recovery_mean": 0.7436597935416343,
+      "recovery_sd": 0.1144469342449941,
+      "bias_pp_mean": 1.2817010322918259,
+      "bias_pp_sd": 0.5722346712249711,
+      "n_beyond_floor": 6,
+      "separated": true
+    },
+    {
+      "injected_change_pct": -10.0,
+      "n": 6,
+      "measured_change_pct_mean": -8.002622681703343,
+      "measured_change_pct_sd": 0.6762586073189746,
+      "recovery_mean": 0.8002622681703345,
+      "recovery_sd": 0.06762586073189743,
+      "bias_pp_mean": 1.997377318296656,
+      "bias_pp_sd": 0.6762586073189745,
+      "n_beyond_floor": 6,
+      "separated": true
+    }
+  ],
+  "smallest_separated_pct": 2.0,
+  "pipeline": "FastSurfer 2.6.1 seg-only, partial-volume stats"
+}

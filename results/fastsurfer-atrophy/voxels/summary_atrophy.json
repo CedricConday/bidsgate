@@ -1,0 +1,46 @@
+{
+  "noise_floor_pct": 0.10770639727380948,
+  "k": 2.0,
+  "n_reference": 18,
+  "reference_change_pct_rms": 0.05385319863690474,
+  "levels": [
+    {
+      "injected_change_pct": -2.0,
+      "n": 6,
+      "measured_change_pct_mean": -1.170229717778102,
+      "measured_change_pct_sd": 0.30423742827166855,
+      "recovery_mean": 0.5851148588890506,
+      "recovery_sd": 0.15211871413583414,
+      "bias_pp_mean": 0.8297702822218979,
+      "bias_pp_sd": 0.30423742827166855,
+      "n_beyond_floor": 6,
+      "separated": true
+    },
+    {
+      "injected_change_pct": -5.0,
+      "n": 6,
+      "measured_change_pct_mean": -3.705054880167319,
+      "measured_change_pct_sd": 0.3893778037840981,
+      "recovery_mean": 0.7410109760334631,
+      "recovery_sd": 0.07787556075681956,
+      "bias_pp_mean": 1.2949451198326811,
+      "bias_pp_sd": 0.38937780378409814,
+      "n_beyond_floor": 6,
+      "separated": true
+    },
+    {
+      "injected_change_pct": -10.0,
+      "n": 6,
+      "measured_change_pct_mean": -7.886393662259208,
+      "measured_change_pct_sd": 0.7331400883627096,
+      "recovery_mean": 0.7886393662259209,
+      "recovery_sd": 0.07331400883627098,
+      "bias_pp_mean": 2.113606337740792,
+      "bias_pp_sd": 0.7331400883627096,
+      "n_beyond_floor": 6,
+      "separated": true
+    }
+  ],
+  "smallest_separated_pct": 2.0,
+  "pipeline": "FastSurfer 2.6.1 seg-only, voxel count"
+}

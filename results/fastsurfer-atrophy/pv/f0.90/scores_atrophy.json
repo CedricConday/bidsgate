@@ -1,0 +1,101 @@
+{
+  "pipeline": "FastSurfer 2.6.1 seg-only, partial-volume stats",
+  "results": [
+    {
+      "subject": "sub-9000_ses-1",
+      "score": {
+        "target": "region label 17",
+        "injected_factor": 0.9,
+        "measured_factor": 0.9114257872392622,
+        "injected_change_pct": -9.999999999999998,
+        "measured_change_pct": -8.857421276073785,
+        "recovery": 0.8857421276073786,
+        "bias_pp": 1.1425787239262135,
+        "volume_before_mm3": 4402.41,
+        "volume_after_mm3": 4012.47,
+        "truth_mask_change_pct": -9.269533055940826,
+        "reference_change_pct": -0.06656997625441585
+      }
+    },
+    {
+      "subject": "sub-9001_ses-1",
+      "score": {
+        "target": "region label 17",
+        "injected_factor": 0.9,
+        "measured_factor": 0.9198745616592278,
+        "injected_change_pct": -9.999999999999998,
+        "measured_change_pct": -8.012543834077224,
+        "recovery": 0.8012543834077226,
+        "bias_pp": 1.987456165922774,
+        "volume_before_mm3": 3533.21,
+        "volume_after_mm3": 3250.11,
+        "truth_mask_change_pct": -8.202166064981952,
+        "reference_change_pct": -0.09468670825657499
+      }
+    },
+    {
+      "subject": "sub-9002_ses-1",
+      "score": {
+        "target": "region label 17",
+        "injected_factor": 0.9,
+        "measured_factor": 0.9236014060051666,
+        "injected_change_pct": -9.999999999999998,
+        "measured_change_pct": -7.63985939948334,
+        "recovery": 0.7639859399483342,
+        "bias_pp": 2.360140600516658,
+        "volume_before_mm3": 4486.47,
+        "volume_after_mm3": 4143.71,
+        "truth_mask_change_pct": -9.522745054208116,
+        "reference_change_pct": -0.018057178163433107
+      }
+    },
+    {
+      "subject": "sub-9003_ses-1",
+      "score": {
+        "target": "region label 17",
+        "injected_factor": 0.9,
+        "measured_factor": 0.9308524627118008,
+        "injected_change_pct": -9.999999999999998,
+        "measured_change_pct": -6.914753728819923,
+        "recovery": 0.6914753728819925,
+        "bias_pp": 3.0852462711800754,
+        "volume_before_mm3": 4791.06,
+        "volume_after_mm3": 4459.77,
+        "truth_mask_change_pct": -9.844775497447655,
+        "reference_change_pct": -0.08552150423477567
+      }
+    },
+    {
+      "subject": "sub-9004_ses-1",
+      "score": {
+        "target": "region label 17",
+        "injected_factor": 0.9,
+        "measured_factor": 0.9189036014220207,
+        "injected_change_pct": -9.999999999999998,
+        "measured_change_pct": -8.109639857797934,
+        "recovery": 0.8109639857797935,
+        "bias_pp": 1.8903601422020646,
+        "volume_before_mm3": 4658.16,
+        "volume_after_mm3": 4280.4,
+        "truth_mask_change_pct": -7.642695904546926,
+        "reference_change_pct": 0.007756959774929406
+      }
+    },
+    {
+      "subject": "sub-9008_ses-1",
+      "score": {
+        "target": "region label 17",
+        "injected_factor": 0.9,
+        "measured_factor": 0.9151848200603214,
+        "injected_change_pct": -9.999999999999998,
+        "measured_change_pct": -8.481517993967858,
+        "recovery": 0.8481517993967859,
+        "bias_pp": 1.5184820060321407,
+        "volume_before_mm3": 5122.55,
+        "volume_after_mm3": 4688.08,
+        "truth_mask_change_pct": -10.041063746578017,
+        "reference_change_pct": -0.059892423992291555
+      }
+    }
+  ]
+}

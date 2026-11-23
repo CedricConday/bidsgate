@@ -1,0 +1,4 @@
+injected_change_pct	n	measured_change_pct_mean	measured_change_pct_sd	recovery_mean	recovery_sd	bias_pp_mean	bias_pp_sd	n_beyond_floor	separated
+-2.0000	6	-1.1702	0.3042	0.5851	0.1521	0.8298	0.3042	6	True
+-5.0000	6	-3.7051	0.3894	0.7410	0.0779	1.2949	0.3894	6	True
+-10.0000	6	-7.8864	0.7331	0.7886	0.0733	2.1136	0.7331	6	True
