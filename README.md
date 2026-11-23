@@ -91,8 +91,11 @@ three injected losses. The target was the left hippocampus as FastSurfer itself 
 unmodified scan, contracted with `inject-atrophy --region ... --label 17` by 2, 5 and 10 % of its volume.
 The right hippocampus, 17 to 23 mm away and outside the 12 mm range of the deformation, was left alone as the
 reference. That makes 24 FastSurfer runs. Tables are in `results/fastsurfer-atrophy/`; volumes are from
-FastSurfer's partial-volume-corrected `aseg+DKT.stats` (`pv/`); plain voxel counts (`voxels/`) give the same
-mean recovery to within 0.01.
+FastSurfer's partial-volume-corrected `aseg+DKT.stats` (`pv/`); plain voxel counts (`voxels/`) give mean
+recoveries of 0.59, 0.74 and 0.79. The target label was resampled nearest-neighbour from FastSurfer's 1 mm
+space to the 0.8 mm T1w grid before injection. The `truth_mask_change_pct` column in the tables is that
+binary mask after thresholding the warp, so it moves in coarse steps (0 % at the 2 % level); the warp itself
+delivered -1.95 to -2.00 %, -4.91 to -5.01 % and -9.90 to -10.06 % in all six subjects.
 
 | Injected loss | Measured loss, mean (SD) | Recovered | Range over subjects |
 |---|---|---|---|
@@ -102,20 +105,26 @@ mean recovery to within 0.01.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/CedricConday/bidsgate/master/figures/fastsurfer-atrophy-dark.svg">
-  <img alt="FastSurfer measured 1.2 % of a 2 % hippocampal loss, 3.7 % of 5 % and 8.0 % of 10 %, all below the line of perfect recovery; the untouched right hippocampus stayed within 0.12 % of zero" src="https://raw.githubusercontent.com/CedricConday/bidsgate/master/figures/fastsurfer-atrophy-light.svg" width="560">
+  <img alt="FastSurfer measured 1.2 % of a 2 % hippocampal loss, 3.7 % of 5 % and 8.0 % of 10 %, every point short of the line of perfect recovery; the untouched right hippocampus stayed within 0.12 % of zero" src="https://raw.githubusercontent.com/CedricConday/bidsgate/master/figures/fastsurfer-atrophy-light.svg" width="560">
 </picture>
 
 FastSurfer saw every injected loss in every subject, including 2 %: the smallest measured change was
-0.65 %, while the untouched right hippocampus never moved more than 0.12 % (the noise floor, twice its RMS
-change, is also 0.12 %). But it reports only part of the loss, and the smaller the loss the smaller the part:
-60 % of a 2 % loss, 80 % of a 10 % one. If real atrophy is measured the same way, hippocampal atrophy rates
-from FastSurfer are shrunk towards zero, and slow atrophy more than fast.
+0.65 %, while the untouched right hippocampus never moved more than 0.12 % (0.13 % by voxel count; the noise
+floor, twice its RMS change, is 0.12 %). But it reports only part of every loss: 60 % of a 2 % loss, 74 % of
+5 %, 80 % of 10 %. A straight line through the points has a slope of 0.85 and an offset of about 0.5
+percentage points, and the offset is what makes small losses look worse; three of the six subjects show no
+trend with size at all. This design cannot say whether that offset is FastSurfer's: the injected scans are
+resampled (trilinear) around the target and the baseline scans are not, and there is no
+control that is resampled the same way without losing volume. Until there is one, read the offset as
+unresolved and the slope of 0.85 as the firmer number.
 
 Limits, stated plainly: six healthy controls; one FastSurfer version, run at `--vox_size 1` instead of its
-default native resolution (0.8 mm here), because the default took about 70 min per scan on this CPU; the
-loss is a smooth uniform contraction of FastSurfer's own label, which is not what real atrophy looks like; and the noise floor is the variation of an untouched structure between runs on the
-same scan, not scan-rescan noise, which would be larger. SynthSeg was not compared: its official weights
-have no Linux arm64 build.
+default native resolution (0.8 mm here), because the default was projected at about 70 min per scan on this CPU while it was shared with another job; the
+loss is a smooth uniform contraction of FastSurfer's own label, which is not what real atrophy looks like; FastSurfer was run cross-sectionally, while atrophy rates are usually measured with
+a longitudinal stream; and the noise floor is how much an untouched structure moved between the original and
+the injected scan, not scan-rescan noise, which would be larger. Whether FastSurfer gives identical output on
+an identical scan was not measured. SynthSeg was not compared: its official weights ship
+only inside FreeSurfer, which has no Linux arm64 build, or from the authors' file share.
 
 ## Injections
 
