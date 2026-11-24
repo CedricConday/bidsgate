@@ -150,12 +150,12 @@ def prediction(cond: str, sub: str, seg: Path) -> Path:
     ref = nib.load(flair(sub))
     img = nib.load(seg)
     labels = np.asarray(img.dataobj)
+    if not np.allclose(img.affine, nib.load(mindglide_input(cond, sub)).affine, atol=1e-3):
+        raise SystemExit(f"{sub} {cond}: label map affine differs from MindGlide's input")
     if cond == "flair-thick":
         labels = unthicken(labels, ref)
     if labels.shape != ref.shape[:3]:
         raise SystemExit(f"{sub} {cond}: label map {labels.shape} is not on the truth grid {ref.shape}")
-    if cond == "flair" and not np.allclose(img.affine, ref.affine, atol=1e-3):
-        raise SystemExit(f"{sub} {cond}: label map affine differs from the FLAIR's")
     mask = (labels == LESION).astype(np.uint8)
     pred.parent.mkdir(parents=True, exist_ok=True)
     nib.save(nib.Nifti1Image(mask, ref.affine), pred)

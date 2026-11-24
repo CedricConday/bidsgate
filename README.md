@@ -133,7 +133,7 @@ on the injected FLAIR of the same six controls, with the same twelve lesions per
 nothing was re-injected. MindGlide takes one image of any sequence and returns 20 labels; label 18 (Lesion) was
 scored as a binary mask with `score-lesions` at the same defaults, so the numbers sit directly next to LST-AI's.
 It was run twice: on the FLAIR as is (0.8 mm isotropic), and on the same FLAIR averaged into 4.8 mm axial slabs,
-to test its claim that it works on scans of any quality. Tables are in `results/mindglide-lesions/`.
+to probe its claim that it works on scans of any quality. Tables are in `results/mindglide-lesions/`.
 
 | Subject | Detected | Dice | Volume ratio | Sensitivity 0-100 / 100-500 / 500+ mm3 | Extra components beyond 2 mm |
 |---|---|---|---|---|---|
@@ -155,27 +155,35 @@ Side by side (`results/mindglide-lesions/comparison.tsv`):
 | Mean Dice | 0.82 | 0.73 | 0.62 |
 | Extra components, all six | 75 | 142 | 191 |
 
-MindGlide finds nearly as many of the injected lesions as LST-AI from one image instead of two, and finds them
-in different places: it caught two lower-third lesions LST-AI missed (194 and 611 mm3 in sub-9000) and one of
-28 mm3 in sub-9008, and missed five of 28 to 30 mm3 that LST-AI found. Its misses are the smallest lesions; every
-lesion over 100 mm3 it missed, LST-AI missed too. Its outlines are looser (Dice 0.73 against 0.82), its total
-volume is right on average (mean ratio 1.01) but wrong in both directions per subject (0.70 to 1.30), and it
-reports about twice as much beyond what was injected: 16 to 28 extra components on every control, against
-2 to 32 for LST-AI. As in the first results, the gate cannot say how many of those are real incidental
-hyperintensities; it can say MindGlide reports more of them, and more evenly across subjects.
+MindGlide finds nearly as many of the injected lesions as LST-AI from one image instead of two (62 against
+64 of 72, a difference of two lesions), and finds them in different places. It caught three lower-third lesions
+LST-AI missed (194 and 611 mm3 in sub-9000, 28 mm3 in sub-9008) and missed five of 28 to 30 mm3 that LST-AI
+found. Eight of its ten misses are under 100 mm3; the two larger ones (194 and 605 mm3, both in sub-9002)
+LST-AI missed too. On the lesions it finds it covers less of each one (mean overlap 0.74 against 0.93), which is
+most of the gap in Dice (0.73 against 0.82). Its total volume averages out (mean ratio 1.01 against 1.13), but
+only because over- and under-estimates cancel: the typical per-subject error is larger (mean |ratio - 1| of
+0.24 against 0.14, range 0.70 to 1.30). Beyond what was injected it reports 142 components against 75 and
+5638 mm3 against 2028 mm3, with 16 to 28 components on every control against 2 to 32 for LST-AI. As in the
+first results, the gate cannot say how many of those are real incidental hyperintensities; it can say
+MindGlide reports more of them, and more evenly across subjects.
 
-On the 4.8 mm slabs it loses three more lesions, all of 26 to 71 mm3, and keeps every lesion over 100 mm3 it
-found at full resolution. The fall in Dice to 0.62 is partly the scoring, not the model: a label on a 4.8 mm slab
-is repeated over six 0.8 mm slices before it is compared with the truth, so every edge becomes a step.
-The detection count is the firmer number.
+On the 4.8 mm slabs it loses three more lesions, all in the upper third and all of 26 to 71 mm3, gains none,
+and keeps every lesion over 100 mm3. Because MindGlide returns labels on its input grid, each slab label covers
+six 0.8 mm slices of the truth grid: outlines become steps along the head axis, overlap falls to 0.67, Dice to
+0.62 and the volume ratio rises (mean 1.18, up to 1.61). That resolution loss belongs to the condition, not to
+the scorer. It also means the slab row's extra components are not comparable with the full-resolution rows: a
+slab can reach up to about 4 mm past a lesion edge, beyond the 2 mm margin within which nothing counts as extra,
+so part of the rise from 142 to 191 is the same stepping. The detection count is the firmer number, with one
+caution: whether a lesion smaller than a slab survives depends on where the slab boundaries fall, and only one
+slab position was run.
 
-Limits, stated plainly: the same six controls and the same synthetic lesions as the first results, injected
+Limits, stated plainly: six controls and 72 synthetic lesions, the same as the first results, injected
 brighter on FLAIR (gain 0.6) than on T1w, which favours a FLAIR-only model; the two tools did not get the same
 input, by design, because MindGlide takes one image and LST-AI two, so this compares each tool as it is meant to
-be used, not the networks alone; the slabs are a FLAIR averaged after acquisition, not a scan acquired thick;
-one MindGlide version and checkpoint (`_20240404_conjurer_trained_dice_7733.pt`, Hugging Face revision
-a1969821c0a4), run on CPU at about 16 minutes per scan with four threads. Versions, checkpoint and run times are
-in `provenance.json`.
+be used, not the networks alone; the slabs are one synthetic degradation of a FLAIR, averaged after acquisition,
+not a scan acquired thick, so they probe the "any quality" claim in one case only; one MindGlide version and
+checkpoint (`_20240404_conjurer_trained_dice_7733.pt`, Hugging Face revision a1969821c0a4), run on CPU at 16 to
+18 minutes per scan with four threads. Versions, checkpoint and run times are in `provenance.json`.
 
 ## Injections
 
