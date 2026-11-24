@@ -1,0 +1,25 @@
+{
+  "mindglide": "1.3.0",
+  "torch": "2.15.0+cpu",
+  "monai": "1.6.2",
+  "checkpoint": "_20240404_conjurer_trained_dice_7733.pt",
+  "checkpoint_revision": "a1969821c0a4a37ae54f649a9a0c6fd1b8a48e26",
+  "lesion_label": 18,
+  "threads": 4,
+  "slab_slices": 6,
+  "settings": "device=cpu, defaults (largest-component cleanup, reorient)",
+  "seconds_per_scan": {
+    "flair/sub-9000": 966,
+    "flair/sub-9001": 947,
+    "flair/sub-9002": 973,
+    "flair/sub-9003": 966,
+    "flair/sub-9004": 956,
+    "flair/sub-9008": 964,
+    "flair-thick/sub-9000": 951,
+    "flair-thick/sub-9001": 1066,
+    "flair-thick/sub-9002": 954,
+    "flair-thick/sub-9003": 1072,
+    "flair-thick/sub-9004": 1070,
+    "flair-thick/sub-9008": 1078
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "detected_of_n": {
+    "lst-ai-v2": {
+      "all": [
+        64,
+        72
+      ],
+      "height:lower": [
+        6,
+        12
+      ],
+      "size:0-100mm3": [
+        32,
+        36
+      ],
+      "height:upper": [
+        24,
+        24
+      ],
+      "size:500-infmm3": [
+        22,
+        24
+      ],
+      "size:100-500mm3": [
+        10,
+        12
+      ],
+      "height:middle": [
+        34,
+        36
+      ]
+    },
+    "mindglide-flair": {
+      "all": [
+        62,
+        72
+      ],
+      "height:lower": [
+        7,
+        12
+      ],
+      "size:0-100mm3": [
+        28,
+        36
+      ],
+      "height:upper": [
+        23,
+        24
+      ],
+      "size:500-infmm3": [
+        23,
+        24
+      ],
+      "size:100-500mm3": [
+        11,
+        12
+      ],
+      "height:middle": [
+        32,
+        36
+      ]
+    },
+    "mindglide-flair-thick": {
+      "all": [
+        59,
+        72
+      ],
+      "height:lower": [
+        7,
+        12
+      ],
+      "size:0-100mm3": [
+        25,
+        36
+      ],
+      "height:upper": [
+        20,
+        24
+      ],
+      "size:500-infmm3": [
+        23,
+        24
+      ],
+      "size:100-500mm3": [
+        11,
+        12
+      ],
+      "height:middle": [
+        32,
+        36
+      ]
+    }
+  },
+  "mean_dice": {
+    "lst-ai-v2": 0.8198015229278045,
+    "mindglide-flair": 0.7313718244184799,
+    "mindglide-flair-thick": 0.6166720876754808
+  },
+  "false_positive_components_total": {
+    "lst-ai-v2": 75,
+    "mindglide-flair": 142,
+    "mindglide-flair-thick": 191
+  }
+}

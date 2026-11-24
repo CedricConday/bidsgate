@@ -126,6 +126,57 @@ the injected scan, not scan-rescan noise, which would be larger. Whether FastSur
 an identical scan was not measured. SynthSeg was not compared: its official weights ship
 only inside FreeSurfer, which has no Linux arm64 build, or from the authors' file share.
 
+## Third results: MindGlide 1.3.0 lesion label on the same injected lesions
+
+[MindGlide](https://github.com/MS-PINPOINT/mindGlide) 1.3.0 (PyPI, CPU, every setting at its default) was run
+on the injected FLAIR of the same six controls, with the same twelve lesions per subject as the first results;
+nothing was re-injected. MindGlide takes one image of any sequence and returns 20 labels; label 18 (Lesion) was
+scored as a binary mask with `score-lesions` at the same defaults, so the numbers sit directly next to LST-AI's.
+It was run twice: on the FLAIR as is (0.8 mm isotropic), and on the same FLAIR averaged into 4.8 mm axial slabs,
+to test its claim that it works on scans of any quality. Tables are in `results/mindglide-lesions/`.
+
+| Subject | Detected | Dice | Volume ratio | Sensitivity 0-100 / 100-500 / 500+ mm3 | Extra components beyond 2 mm |
+|---|---|---|---|---|---|
+| sub-9000 | 10 of 12 | 0.76 | 1.23 | 0.67 / 1.00 / 1.00 | 28 (1303 mm3) |
+| sub-9001 | 11 of 12 | 0.74 | 1.30 | 0.83 / 1.00 / 1.00 | 24 (1637 mm3) |
+| sub-9002 | 7 of 12 | 0.64 | 0.79 | 0.50 / 0.50 / 0.75 | 27 (968 mm3) |
+| sub-9003 | 12 of 12 | 0.70 | 0.70 | 1.00 / 1.00 / 1.00 | 25 (230 mm3) |
+| sub-9004 | 10 of 12 | 0.81 | 1.21 | 0.67 / 1.00 / 1.00 | 16 (1212 mm3) |
+| sub-9008 | 12 of 12 | 0.74 | 0.81 | 1.00 / 1.00 / 1.00 | 22 (288 mm3) |
+| **All** | **62 of 72** | **0.73 mean** | | **28/36, 11/12, 23/24** | **142** |
+
+Side by side (`results/mindglide-lesions/comparison.tsv`):
+
+| | LST-AI v2 (T1w + FLAIR) | MindGlide (FLAIR) | MindGlide (FLAIR, 4.8 mm slabs) |
+|---|---|---|---|
+| Detected | 64 of 72 | 62 of 72 | 59 of 72 |
+| 0-100 / 100-500 / 500+ mm3 | 32/36, 10/12, 22/24 | 28/36, 11/12, 23/24 | 25/36, 11/12, 23/24 |
+| Lower / middle / upper third | 6/12, 34/36, 24/24 | 7/12, 32/36, 23/24 | 7/12, 32/36, 20/24 |
+| Mean Dice | 0.82 | 0.73 | 0.62 |
+| Extra components, all six | 75 | 142 | 191 |
+
+MindGlide finds nearly as many of the injected lesions as LST-AI from one image instead of two, and finds them
+in different places: it caught two lower-third lesions LST-AI missed (194 and 611 mm3 in sub-9000) and one of
+28 mm3 in sub-9008, and missed five of 28 to 30 mm3 that LST-AI found. Its misses are the smallest lesions; every
+lesion over 100 mm3 it missed, LST-AI missed too. Its outlines are looser (Dice 0.73 against 0.82), its total
+volume is right on average (mean ratio 1.01) but wrong in both directions per subject (0.70 to 1.30), and it
+reports about twice as much beyond what was injected: 16 to 28 extra components on every control, against
+2 to 32 for LST-AI. As in the first results, the gate cannot say how many of those are real incidental
+hyperintensities; it can say MindGlide reports more of them, and more evenly across subjects.
+
+On the 4.8 mm slabs it loses three more lesions, all of 26 to 71 mm3, and keeps every lesion over 100 mm3 it
+found at full resolution. The fall in Dice to 0.62 is partly the scoring, not the model: a label on a 4.8 mm slab
+is repeated over six 0.8 mm slices before it is compared with the truth, so every edge becomes a step.
+The detection count is the firmer number.
+
+Limits, stated plainly: the same six controls and the same synthetic lesions as the first results, injected
+brighter on FLAIR (gain 0.6) than on T1w, which favours a FLAIR-only model; the two tools did not get the same
+input, by design, because MindGlide takes one image and LST-AI two, so this compares each tool as it is meant to
+be used, not the networks alone; the slabs are a FLAIR averaged after acquisition, not a scan acquired thick;
+one MindGlide version and checkpoint (`_20240404_conjurer_trained_dice_7733.pt`, Hugging Face revision
+a1969821c0a4), run on CPU at about 16 minutes per scan with four threads. Versions, checkpoint and run times are
+in `provenance.json`.
+
 ## Injections
 
 **Lesions** (`inject-lesions`): ellipsoidal lesions with soft edges, placed inside a
